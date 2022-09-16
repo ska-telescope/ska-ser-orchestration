@@ -5,9 +5,12 @@ output "instance_group" {
   }
 }
 
-output "instance_group_inventory" {
+output "inventory" {
   description = "Instance group ansible inventory"
   value = {
-    "${local.configuration.name}" = merge([for instance in module.instance : instance.instance_inventory]...)
+    "${local.configuration.name}" = {
+      inventory_type = "instance_group"
+      hosts          = merge([for instance in module.instance : instance.inventory]...)
+    }
   }
 }

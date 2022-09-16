@@ -10,4 +10,6 @@ locals {
     jump_host             = var.defaults.jump_host
     volumes               = {}
   })
+
+  ssh_keys_directory = "./keys"
 }
