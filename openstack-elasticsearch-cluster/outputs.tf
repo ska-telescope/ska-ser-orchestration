@@ -13,7 +13,7 @@ output "cluster" {
 output "inventory" {
   description = "Cluster ansible inventory"
   value = {
-    "${local.elasticsearch.name}" = {
+    (local.elasticsearch.name) = {
       inventory_type = "cluster"
       children = merge([
         module.elasticsearch_master.inventory,

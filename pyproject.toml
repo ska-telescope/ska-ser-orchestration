@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "ska-ser-orchestration"
+version = "0.1.0"
+description = "SKA Terraform-based orchestration"
+authors = ["Pedro Osório Silva <pedro.osorio@atlar.pt>"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = ">=3.7, <3.11"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.11.1"
+black = "^22.3.0"
+isort = "^5.10.0"
+flake8 = "^4.0.1"
+pylint-junit = "^0.3.2"
+requests = "^2.25.1"
+pyyaml = "^5.4.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+

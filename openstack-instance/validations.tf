@@ -1,7 +1,6 @@
 locals {
-  az = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
-  # Workaround to validate the data query, as the provider implementation does not throw an error if it does not exist
-  jump_host = coalesce(data.openstack_compute_instance_v2.jump_host.id, null)
+  az            = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
+  jump_host_fip = data.openstack_compute_instance_v2.jump_host.access_ip_v4
 }
 
 data "openstack_compute_flavor_v2" "flavor" {
@@ -24,12 +23,13 @@ data "openstack_compute_keypair_v2" "keypair" {
   name = local.configuration.keypair
 }
 
-# TODO: Move this to a generic module that can read information of various sources: openstack, aws, etc
 data "openstack_compute_instance_v2" "jump_host" {
   id = local.configuration.jump_host
 }
 
+# Workaround to fail if jump_host (id) is not valid, as the data source does not
+# throw an error if it does not exist
 data "openstack_networking_floatingip_v2" "jump_host_fip" {
-  fixed_ip = data.openstack_compute_instance_v2.jump_host.access_ip_v4
+  fixed_ip = local.jump_host_fip != null ? local.jump_host_fip : "jump-host-not-found"
 }
 

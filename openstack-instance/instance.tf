@@ -6,7 +6,7 @@ locals {
 resource "openstack_compute_instance_v2" "instance" {
   name                = local.configuration.name
   flavor_name         = data.openstack_compute_flavor_v2.flavor.name
-  availability_zone   = local.configuration.availability_zone
+  availability_zone   = local.az
   image_id            = data.openstack_images_image_v2.image.id
   key_pair            = data.openstack_compute_keypair_v2.keypair.name
   security_groups     = concat(local.configuration.security_groups, local.instance_security_group)

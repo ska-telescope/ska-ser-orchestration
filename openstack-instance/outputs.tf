@@ -38,7 +38,7 @@ output "instance" {
 output "inventory" {
   description = "Instance ansible inventory"
   value = {
-    "${openstack_compute_instance_v2.instance.name}" = {
+    (openstack_compute_instance_v2.instance.name) = {
       ansible_host                 = openstack_compute_instance_v2.instance.access_ip_v4
       ansible_user                 = local.user
       ansible_python_interpreter   = "python3"
