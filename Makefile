@@ -12,7 +12,7 @@ TF_AUTO_APPROVE?=
 TF_ARGUMENTS?=
 
 ifeq ($(TF_LINT_TARGET),)
-    TF_LINT_TARGET := $(shell find . -name 'terraform.tf' | sed 's#.terraform.tf##' | sort | uniq)
+    TF_LINT_TARGET := $(shell find . -name 'terraform.tf' | sed 's/.terraform.tf//' | sort | uniq )
 endif
 
 ifneq ($(TF_TARGET),)

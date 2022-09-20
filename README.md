@@ -1,120 +1,8 @@
 # SKAO Orchestration
 
-This repository contains **Terraform** modules used to create base units of infrastructure that we can later configure to create a complex cloud environment.
+This repository contains custom SKA **Terraform** modules used to create base units of infrastructure that we use to create complex cloud environments. This repository **shouldn't** be used to create infrastructure, except when playing around with the **examples**. For infrastructure creation in environments, we should use https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery.
 
-# Getting started
-
-Terraform is the state-of-the-art infrastructure as a code software, with a huge community and support for most public and private clouds. Official documentation can be found here: https://www.terraform.io/language.
-
-As it is a language, it has functions. Documentation for the built-in functions can be found here: https://www.terraform.io/language/functions.
-
-To perform tasks within the language, Terraform uses **providers**. These are libraries to communicate with the provider's system, or API. These provide **resources** that can be created and **data** sources that can be read. Each provider has its own documentation and are usually very extensive and well presented. Here are some useful documentations:
-
-* OpenStack -> https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs
-* AWS -> https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-* Azure -> https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
-* Vault -> https://registry.terraform.io/providers/hashicorp/vault/latest/docs
-* Kubernetes -> https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs 
-
-To compose multiple provider's resources into logical units, we use modules. Terraform modules work similarily to a function - given an input, does some work and produces an output (or not). Before any resource can be managed, we need a persistent state.
-
-## Creating the Terraform state
-
-The Terraform state is where we store (managed by Terraform) all the information on the infrastructure we are managing. The state file can be local, stored in GitLab, AWS S3, etc. Please look into https://www.terraform.io/language/settings/backends/configuration and see the available backends.
-
-*Terraform backend configuration*
-```
-terraform {
-  backend "<backend type>" {
-    <backend configuration>
-  }
-}
-```
-
-## Declaring Providers
-
-Providers blocks are used to configure access to a third-party APIs. More information on providers can be found here: https://www.terraform.io/language/providers.
-
-The same way we need a clouds.yaml, environment variables or CLI arguments for the OpenStack CLI, the OpenStack provider requires proper configuration in order do the API calls to the correct endpoint, with proper authentication. 
-
-> **_NOTE:_** As a **rule** always declare the providers at the top-most level possible and pass it down to the modules, to avoid missing provider definitions.
-
-*Example provider declarations*
-```
-provider "openstack" {
-  cloud     = <cloud name in clouds.yaml>
-  tenant_id = <project/tenant id of OpenStack>
-}
-
-provider "aws" {
-  region = "us-east-1"
-}
-```
-
-Providers, like AWS, also use built-in configuration mechanisms (like AWS credentials), to avoid having sensitive information written in the modules. Provider configuration **support** variables for versatility and reusability of the code.
-
-## Putting the state together
-
-Terraform state and providers should be added in **.tf** files, which are Terraform **code** files. Usually, state and providers are added into a single file - *terraform.tfvars*.
-
-*Example of a state file with a Gitlab Backend*
-```
-# ---------------------- Config ---------------------- #
-# Requires the following to be changed for each configuration:
-# * PROJECT_ID and STATE_ID, used in the http backend's address, lock_address and unlock_address (ie, projects/<PROJECT_ID>/terraform/<STATE_ID>
-
-terraform {
-  experiments = [module_variable_optional_attrs]
-  required_providers {
-    openstack = {
-      source  = "terraform-provider-openstack/openstack"
-      version = "~>1.48.0"
-    }
-  }
-
-  # Requires the following environment variables:
-  # export ENVIRONMENT="<environment name>"
-  # export GITLAB_PROJECT_ID="<gitlab project id>"
-  # export TF_HTTP_USERNAME="<gitlab username>"
-  # export TF_HTTP_PASSWORD="<gitlab user access token>"
-  # export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state"
-  # export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state/lock"
-  # export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state/lock"
-
-  backend "http" {
-    lock_method    = "POST"
-    unlock_method  = "DELETE"
-    retry_wait_min = 5
-    retry_wait_max = 30
-  }
-}
-# --------------------------------------------------- #
-
-# -------------------- Providers -------------------- #
-provider "openstack" {
-  cloud     = var.openstack.cloud
-  tenant_id = var.openstack.project_id
-}
-# --------------------------------------------------- #
-```
-
-Backend configurations do not support Terraform variables, but support **environment variables**. 
-
-
-Note that for the provider, we are using variables. As such, these variables need to be declared. Terraform supports weak-typed variables (with the type **any** or by not describing the type at all) and strong-typed variables. Usually, variables go into a **variables.tf** file:
-
-```
-variable "openstack" {
-  type = object({
-    cloud      = string
-    project_id = string
-  })
-}
-```
-
-In our infrastructure definition, we can create individual **resources** from providers, or use modules that bundle multiple resources into a single unit.
-
-# Modules
+## Modules
 
 Currently, the following modules are provided in this repository:
 
@@ -166,7 +54,7 @@ output "instance" {
   description = "Instance state"
 }
 
-output "instance_inventory" {
+output "inventory" {
   description = "Instance ansible inventory"
 }
 ```
@@ -216,7 +104,7 @@ output "instance_group" {
   description = "Instance group instances state"
 }
 
-output "instance_group_inventory" {
+output "inventory" {
   description = "Instance group ansible inventory"
 }
 ```
@@ -255,6 +143,7 @@ output "instance_group_inventory" {
     }))
     kibana = optional(object({
       name              = optional(string)
+      size              = optional(number)
       flavor            = optional(string)
       image             = optional(string)
       availability_zone = optional(string)
@@ -284,61 +173,47 @@ output "cluster" {
   description = "Cluster instance groups states"
 }
 
-output "cluster_inventory" {
+output "inventory" {
   description = "Cluster ansible inventory"
 }
 ```
 
 </td>
-<tr></tr>
-<td> ansible-inventory </td>
-<td> Builds an ansible inventory based on the clusters, instance groups and instances present in the state </td>
-<td>
-    
-```
-"target_directory" = {
-  type        = string
-  description = "Directory where to store the inventory.yml"
-}
-
-inventories" = {
-  type = object({
-    clusters        = list(any)
-    instance_groups = list(any)
-    instances       = list(any)
-  })
-  description = "Set of inventories belonging to clusters, instance groups and instances"
-}
-```
-
-```
-Writes an YAML ansible inventory to ${target_directory}/inventory.yml
-```
-
-</td>
 </table>
 
-## Calling modules
+## Getting started
 
-After we have a state storage where we can track the state of our resources, we can call modules (ours, or built-in ones) to actually create infrastructure.
+To get started, we need to install Terraform as shown here: https://learn.hashicorp.com/tutorials/terraform/install-cli. To execute Terraform code, the following is required:
+* terraform.tf - Contains the **terraform** block object with the **state** configuration and required **providers** and their configurations (see https://www.terraform.io/language/settings and https://www.terraform.io/language/providers)
+* variables.tf - Declaration of the input variables to use in our code (see https://www.terraform.io/language/values/variables)
+* terraform.tfvars - Definition of the input variables declared above (see https://www.terraform.io/language/values/variables)
+* Terraform code with the intended configuration, written in **.tf** files (see https://www.terraform.io/language/syntax)
 
-### openstack-instance
+To make it simpler, we've created an example for each module we provide. They contain full definitions for the files described above.
 
-This module creates an OpenStack instance on a given network, creating and attaching a dynamic set of volumes to it. We can leverage the usage of default values to only change what we really need.
+To deploy the examples, you need:
+* Gitlab access token, generated with the **api** permission
+* OpenStack clouds.yaml configured, with a cloud named **engage** (see https://docs.openstack.org/python-openstackclient/pike/configuration/index.html)
 
-*Example instance*
+> **_NOTE:_** You can use any other cloud other than **engage**. For that, you need to adjust all **terraform.tfvars** files in the examples accordingly
+
+### Creating an instance: **openstack-instance** module
+
+This module creates an OpenStack instance on a given network, creating and attaching a set of volumes to it. We can leverage the usage of default values to only change what we really need and keep our configurations DRY. These defaults are passed using the variable **defaults**, which is an input to the module, as shown in the modules section above.
+
+*instance.tf from examples/instance*
 ```
-module "bastion" {
-  source   = "./ska-ser-orchestration/openstack-instance"
+module "instance" {
+  source   = "../../openstack-instance"
   defaults = var.defaults
   providers = {
     openstack = openstack
   }
 
   configuration = {
-    name = "bastion"
+    name = local.instance_name
     flavor = "m1.large"
-    volumes = [ 
+    volumes = [
       {
         mount_point = "/home"
         name = "home"
@@ -349,189 +224,226 @@ module "bastion" {
 }
 ```
 
-This would create an m1.large instance, named bastion, with a 30Gb volume that should be mounted at */home*. Note, that the OpenStack provider we will use within the module, is being passed to the module. This allows us to simply remove this declaration to destroy the component, cleanly.
+In this particular configuration, an instance of flavor "m1.large" will be created, along with a volume of 30Gb that should be mounted to "/home". Also, for single instances, a security group is created. Configuration and mounting of volumes should be performed with Ansible.
 
-### openstack-instance-group
+To deploy this example, do:
 
-An instance group is merely a set of instances that are configured/sized the same way and are meant to be stateless and scaled up and down. This is the perfect building block for a cluster.
-
-*Example instance group*
 ```
-module "load_balancers" {
-  source   = "./ska-ser-orchestration/openstack-instance-group"
+cd examples/instance
+export GITLAB_PROJECT_ID="39438691" # ska-ser-orchestration repository
+export TF_HTTP_USERNAME="<gitlab username>"
+export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
+export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate"
+export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate/lock"
+export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate/lock"
+terraform init --upgrade
+terraform apply
+```
+
+Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.
+
+```
+sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+mkdir -p keys && cp <path to ska-techops.pem> keys
+ansible all -m ping -i inventory/inventory.yml
+```
+
+Your state file can be found at https://gitlab.com/ska-telescope/sdi/ska-ser-orchestration/-/terraform.
+
+To cleanup, do:
+```
+terraform destroy
+```
+
+## Creating a single-configuration cluster: openstack-instance-group module
+
+An instance group is merely a set of instances that are configured/sized the same way and are meant scaled up and down with ease. This is the basic building block for a cluster. We can, in the case of Kubernetes or Elasticsearch, have a cluster composed of multiple different instance groups, to achieve a complex topology.
+
+*instance-group.tf from examples/instance-group*
+```
+module "instance_group" {
+  source   = "../../openstack-instance-group"
   defaults = var.defaults
   providers = {
     openstack = openstack
   }
 
   configuration = {
-    name = "load_balancer"
+    name = local.instance_group_name
     size = 2
   }
 }
 ```
 
-This would create two instances (load_balancer_i00 and load_balancer_i01) in the same network, with the same flavor, image, etc.
+In this case, two instances with the default configuration (remember the **defaults** variable mentioned earlier) will be created. As for the instance module, we can set a flavor, image, etc. This instance_group module also creates a **security group** that is shared by all instances in the instance group.
 
-### openstack-elasticsearch-cluster
+To deploy this example, do:
 
-This module is a wrapper for a set of instance groups we use to create an elasticsearch cluster. This cluster usually is composed by Elasticsearch (backend) nodes (eg, master, data, coordinating) and by Kibana (frontend). To simplify and streamline the creation of complex sets of infrastructure, we can bundle everything in its own module and add default variables (like volume definitions).
+```
+cd examples/instance-group
+export GITLAB_PROJECT_ID="39438691" # ska-ser-orchestration repository
+export TF_HTTP_USERNAME="<gitlab username>"
+export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
+export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate"
+export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate/lock"
+export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate/lock"
+terraform init --upgrade
+terraform apply
+```
 
-*Example cluster defined for elasticsearch*
+We can now try to perform a change to the instance group, by changing flavors:
+
+*instance-group.tf from examples/instance-group*
+```
+module "instance_group" {
+  source   = "../../openstack-instance-group"
+  defaults = var.defaults
+  providers = {
+    openstack = openstack
+  }
+
+  configuration = {
+    name = local.instance_group_name
+    flavor = "m1.large"
+    size = 2
+  }
+}
+```
+
+Now, run:
+```
+terraform apply
+```
+
+In this particular API, we are allowed to change this property - flavor - without recreating the resource, being done in place. While the code is running, you can see the instances being resized in OpenStack. When it completes, we can run generate the ansible inventory:
+
+```
+sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+mkdir -p keys && cp <path to ska-techops.pem> keys
+ansible all -m ping -i inventory/inventory.yml
+```
+
+Again, your state file can be found at https://gitlab.com/ska-telescope/sdi/ska-ser-orchestration/-/terraform.
+
+To cleanup, do:
+```
+terraform destroy
+curl --header "Private-Token: $TF_HTTP_PASSWORD" --request DELETE "$TF_HTTP_ADDRESS"
+```
+
+## Creating multi-configuration cluster
+
+This module is a wrapper for a set of instance groups we use to create an elasticsearch cluster. This cluster usually is composed by Elasticsearch (backend) nodes (eg, master, data, coordinating) and by Kibana node(s) (frontend). To simplify and streamline the creation of complex sets of infrastructure, we can bundle everything in its own module and add default variables (like volume definitions).
+
+*elasticsearch.tf from examples/elasticsearch*
 ```
 module "elasticsearch" {
-  source   = "./ska-ser-orchestration/openstack-elasticsearch-cluster"
+  source   = "../../openstack-elasticsearch-cluster"
   defaults = var.defaults
   providers = {
     openstack = openstack
   }
 
   elasticsearch = {
+    name = local.elasticsearch_name
+    master = {
+      size = 1
+      data_volume_size = 10
+    }
     data = {
       flavor = "m1.large"
       size = 3
       data_volume_size = 20
     }
-    kibana = {
-    }
-    master = {
-      size = 1
-      data_volume_size = 10
-    }
+    kibana = {}
   }
 }
 ```
 
-This would in turn, create three instance groups. A set of three data nodes, one master node and one kibana node. Note that the data node has a particular flavor, that might be different from the default one.
+This would in turn, create three instance groups. A set of one master nodes, three data nodes and one kibana node. Note that the data node has a particular flavor, that is be different from the default one (m1.small).
 
-### Putting everything together
-
-Now that we know how to setup a Terraform state and we know how to call modules, we can create Terraform files (.tf extension) and write our infrastructure definitions. Note that above, we are using a variable (denoted by **var.\<varname\>**) called **defaults**. This variable is used and required by our instance modules to simplify configurations. First, we need to declare it (again, using **variables.tf**):
+To deploy this example, do:
 
 ```
-variable "defaults" {
-  type = object({
-    availability_zone = string
-    flavor            = string
-    jump_host         = string
-    image             = string
-    keypair           = string
-    network           = string
-  })
-  description = "Set of default values used when creating OpenStack instances"
-}
+cd examples/elasticsearch
+export GITLAB_PROJECT_ID="39438691" # ska-ser-orchestration repository
+export TF_HTTP_USERNAME="<gitlab username>"
+export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
+export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate"
+export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate/lock"
+export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate/lock"
+terraform init --upgrade
+terraform apply
 ```
 
-As we declared a variable, we need to provide values for it and that is done in **.tfvars** files. There is a multitude of ways to pass Terraform variables, and it is well described here: https://www.terraform.io/language/values/variables
-
-*Example configuration can be found in resources/example.zip*
-```
-# OpenStack Cloud Configurations
-openstack = {
-  cloud      = "<name of a cloud in clouds.yaml>"
-  project_id = "<project/tenant id>"
-}
-
-# OpenStack Instance defaults for the given OpenStack Cloud
-defaults = {
-  flavor            = "<default flavor name>"
-  image             = "<default image name>"
-  availability_zone = "<default az name>"
-  network           = "<default network name>"
-  keypair           = "<default keypair name>"
-  jump_host         = "<default jump host id>"
-}
-```
-
-> **_NOTE:_** Particularily with the OpenStack provider, we are using **clouds.yaml** as the source of configurations, not environment variables.
-
-With all the definitions and values provided, we can create our infrastructure. The Terraform commands need to be executed from the root directory of the environment's **.tf** and **.tfvars** files. Below, you can find a practical example on how to glue everything together in order to create an elasticsearch cluster.
-
-# Deploying an Elasticsearch cluster
-
-As a proof-of-concept and practical learning tool, we've included boilerplate ![code](resources/example.zip) to create an elasticsearch instance, composed of three master nodes, five data nodes and a kibana node. To save resources, their volume sizes' were reduced. Bear in mind, this is using a **cloud** in clouds.yaml named **engage** (pointing to EngageSKA OpenStack), so you either modify **terraform.tfvars** or the clouds.yaml file to suit your needs. If you use another cloud, you will most likely have to change some of the defaults in **terraform.tf** as well.
-
-Extract the zip file into the following structure:
+Again, we can generate the ansible inventory and run commands against our instances:
 
 ```
-.
-├── ansible.cfg
-├── ansible.tf
-├── elasticsearch.tf
-├── inventory -> It will be created after we run the Python script to generate it
-│   └── inventory.yml
-├── keys
-│   └── ska-techops.pem -> Key we are using by default. Add other keys if needed
-├── ska-ser-orchestration -> This repository
-├── terraform.tf
-├── terraform.tfvars
-└── variables.tf
+sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+mkdir -p keys && cp <path to ska-techops.pem> keys
+ansible all -m ping -i inventory/inventory.yml
 ```
 
-Then, give a custom name to your elasticsearch cluster, so that it doesn't collide with others:
+We can now bump our master instance group within the cluster to three nodes:
 
-*Changes to elasticsearch.tf*
+*elasticsearch.tf from examples/elasticsearch*
 ```
 module "elasticsearch" {
-  source   = "./ska-ser-orchestration/openstack-elasticsearch-cluster"
+  source   = "../../openstack-elasticsearch-cluster"
   defaults = var.defaults
   providers = {
     openstack = openstack
   }
 
   elasticsearch = {
-    name   = "elasticsearch" -> Change this
+    name = local.elasticsearch_name
     master = {
+      size = 3
+      data_volume_size = 10
+    }
+    data = {
+      flavor = "m1.large"
+      size = 3
+      data_volume_size = 20
+    }
+    kibana = {}
+  }
+}
 ```
 
-Then, do:
-
+Now, run:
 ```
-export ENVIRONMENT="<environment name>"
-export GITLAB_PROJECT_ID="<gitlab project id>"
-export TF_HTTP_USERNAME="<gitlab username>"
-export TF_HTTP_PASSWORD="<gitlab user access token>"
-export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state"
-export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state/lock"
-export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state/lock"
-terraform init --upgrade
 terraform apply
 ```
 
-You can now navigate to OpenStack and see the created resources.
-
-> **_NOTE:_** You need to have ska-techops.pem in the top level directory to run ansible commands
-
-## Generating the Ansible Inventory
-
-To generate the ansible-inventory file, we've created a ![script](scripts/tfstate-to-ansible-inventory.py) that we can run after **apply or destroy** commands, that uses the state file directly. This was done to decouple the generation of the script from the Terraform code, although still uses Terraform (state). Also, it can be ran without having Terraform installed, just the appropriate environment variables need to be defined. This can be executed at **any** time. To generate it, do:
+This will create two more nodes. Reducing the size of the group, does the opposite. Currently, the scaling down procedure is done sequencially, from higher instance id to lower. We simply need to re-generate the inventory:
 
 ```
-export ENVIRONMENT="<environment name>"
-export GITLAB_PROJECT_ID="<gitlab project id>"
-export TF_HTTP_USERNAME="<gitlab username>"
-export TF_HTTP_PASSWORD="<gitlab user access token>"
-export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${ENVIRONMENT}-terraform-state"
-./ska-ser-orchestration/scripts/tfstate-to-ansible-inventory.py
+sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+ansible all -m ping -i inventory/inventory.yml
 ```
 
-```
-# Ping all nodes in the cluster
-ansible all -m ping
-
-# Ping data nodes
-ansible all -m ping -l elasticsearch_data
-```
-
-At any time, we can visualize the output of our code by doing:
-
-```
-terraform output
-```
-
-To get rid of the created resources, simply do:
-
+To cleanup, do:
 ```
 terraform destroy
+curl --header "Private-Token: $TF_HTTP_PASSWORD" --request DELETE "$TF_HTTP_ADDRESS"
 ```
 
+## References
+
+Terraform is the state-of-the-art infrastructure as a code tool, with a huge community and support for most public and private clouds. Extensive documentation is available at https://www.terraform.io. Below, you can find a list of key concepts and pieces of documentation:
+
+* Terraform's quick start guide at https://www.terraform.io/intro
+* Terraform state (backend) configuration at https://www.terraform.io/language/settings/backends/configuration
+* Terraform's syntax at https://www.terraform.io/language/syntax
+* Terraform's built-in functions at https://www.terraform.io/language/functions
+* Terraform variables at https://www.terraform.io/language/values/variables
+* Terraform modules at https://www.terraform.io/language/modules
+* Terraform providers at https://www.terraform.io/language/providers and some useful providers:
+  * OpenStack: https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs
+  * AWS: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+  * Azure: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
+  * Vault: https://registry.terraform.io/providers/hashicorp/vault/latest/docs
+  * Kubernetes: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
+
+Also, there is a multitude of tutorials online, like https://www.youtube.com/watch?v=l5k1ai_GBDE&ab_channel=TechWorldwithNana. Most of the tutorials use AWS/GCP/Azure resources, although the same logic and strategies apply to our and new use cases. Use our examples as a study case for OpenStack.

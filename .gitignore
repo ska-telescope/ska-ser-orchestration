@@ -1,2 +1,6 @@
 build/
 *.pem
+.terraform
+.terraform.lock.hcl
+inventory.yml
+*.tfstate
