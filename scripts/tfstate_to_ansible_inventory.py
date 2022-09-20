@@ -3,6 +3,7 @@
 an ansible-inventory file, in YAML format.
 """
 
+import base64
 import json
 import os
 import pathlib
@@ -25,40 +26,26 @@ def get_env(variables, default=None):
     return default
 
 
-def merge(data):
+def get_inventory(state, inventory_type):
     """
-    Merges a set of maps, inside a list, into a single map.
+    Gets all the inventories of a given type
     """
     result = {}
-    for obj in data:
-        for (key, value) in obj.items():
-            result[key] = value
-    return dict(result)
+    for resource in state:
+        if (
+            resource["mode"] == "managed"
+            and resource["type"] == "null_resource"
+            and resource["name"] == "inventory"
+        ):
+            inventory_info = resource["instances"][0]["attributes"]["triggers"]
+            inventories = json.loads(
+                base64.b64decode(inventory_info["inventory"]).decode("utf-8")
+            )
+            if inventory_info["type"] == inventory_type:
+                for (inventory_id, inventory_value) in inventories.items():
+                    result[inventory_id] = inventory_value
 
-
-def extract(var, parent_key, key, value=None):
-    """
-    Extracts from a dictionary the all objects that contains
-    a match between the required key and value.
-    """
-    if isinstance(var, dict):
-        _value = var.get(key, None)
-        if value is not None and _value == value:
-            yield {parent_key: var}
-        if value is None and _value is not None:
-            yield {parent_key: var}
-        for (_key, _value) in var.items():
-            if isinstance(_value, (dict, list)):
-                yield from extract(_value, _key, key, value)
-
-
-def get_inventory(state, key="inventory_type", value=None):
-    """
-    Gets all the inventories of a given type. To get instance
-    inventories we should look for variables present in the
-    instance's inventory.
-    """
-    return merge(list(extract(state, None, key, value)))
+    return result
 
 
 # Keys
@@ -81,42 +68,12 @@ if tf_state_request.status_code != 200:
     )
     sys.exit(tf_state_request.status_code)
 
-tf_state = tf_state_request.json()
-
-# Curate output given actual resources
-# The output of a destroyed resource remains in state
-# if we run apply/destroy with -target
-expected_output_blocks = []
-for created_components in tf_state["resources"]:
-    expected_output_blocks.append(created_components["module"].split(".")[1])
-
-expected_output_blocks = [*set(expected_output_blocks)]
-tf_state = tf_state["outputs"]
-
-for expected_output in expected_output_blocks:
-    if expected_output not in tf_state.keys():
-        print(
-            f"** ERROR: Expected to have an output block\
-                for module '{expected_output}'",
-            file=sys.stderr,
-        )
-
-for output in tf_state.keys():
-    if output not in expected_output_blocks:
-        print(
-            "** WARNING: Output for '{output}' in state but\
-                 no resources were found",
-            file=sys.stderr,
-        )
-
-for output in tf_state:
-    if output not in expected_output_blocks:
-        tf_state[output] = None
+tf_state = tf_state_request.json().get("resources", [])
 
 # Get class inventories
-cis = get_inventory(tf_state, value="cluster")
-igis = get_inventory(tf_state, value="instance_group")
-iis = get_inventory(tf_state, key="ansible_host")
+cis = get_inventory(tf_state, "cluster")
+igis = get_inventory(tf_state, "instance_group")
+iis = get_inventory(tf_state, "instance")
 
 # Parse groupings
 igs = {}
@@ -136,7 +93,7 @@ for (ig_id, ig) in igis.items():
 
 # Create inventory
 inventory = {
-    **{  # all with groups and loose hosts
+    **{  # all with groups and single hosts
         ALL_KEY: {
             CHILDREN_KEY: {
                 **{c: None for c in cis},

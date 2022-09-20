@@ -6,5 +6,9 @@ terraform {
       source  = "terraform-provider-openstack/openstack"
       version = "~>1.48.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~>3.1.1"
+    }
   }
 }
