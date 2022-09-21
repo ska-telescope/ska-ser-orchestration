@@ -11,6 +11,8 @@ TF_AUTO_APPROVE?=
 
 TF_ARGUMENTS?=
 
+TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory/inventory.yml
+
 ifeq ($(TF_LINT_TARGET),)
     TF_LINT_TARGET := $(shell find . -name 'terraform.tf' | sed 's/.terraform.tf//' | sort | uniq )
 endif
@@ -21,6 +23,11 @@ endif
 
 ifeq ($(TF_AUTO_APPROVE),true)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -auto-approve
+endif
+
+# Ansible inventory is generated on the corresponding installation folder
+ifdef PLAYBOOKS_ROOT_DIR
+TF_INVENTORY_DIR="$(PLAYBOOKS_ROOT_DIR)/inventory.yml"
 endif
 
 # TODO: Create terraform support in makefile and gitlab templates
@@ -73,4 +80,4 @@ refresh:
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
 generate-inventory:
-	@sh -c "scripts/tfstate_to_ansible_inventory.py $(TF_ROOT_DIR)/inventory/inventory.yml"
+	@sh -c "scripts/tfstate_to_ansible_inventory.py $(TF_INVENTORY_DIR)"
