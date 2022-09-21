@@ -11,6 +11,4 @@ locals {
     volumes               = {}
     applications          = ""
   })
-
-  ssh_keys_directory = "./keys"
 }

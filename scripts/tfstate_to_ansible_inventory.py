@@ -8,9 +8,22 @@ import json
 import os
 import pathlib
 import sys
+from argparse import ArgumentParser
 
 import requests
 import yaml
+
+# Keys
+ALL_KEY = "all"
+CHILDREN_KEY = "children"
+HOSTS_KEY = "hosts"
+SSH_KEY_LOCATIONS = [
+    "../resources/keys",
+    "./keys",
+    "~/.ssh",
+    ".",
+    "..",
+]
 
 
 def get_env(variables, default=None):
@@ -48,24 +61,59 @@ def get_inventory(state, inventory_type):
     return result
 
 
-# Keys
-ALL_KEY = "all"
-CHILDREN_KEY = "children"
-HOSTS_KEY = "hosts"
+def get_ssh_config(host_name, user, host_ip, keypair, jump_host=None):
+    """
+    Creates an SSH host entry for an host, to be added to an ssh
+    config file
+    """
+    identities = "\n".join(
+        [
+            f"    IdentityFile {location}/{keypair}.pem"
+            for location in SSH_KEY_LOCATIONS
+        ]
+    )
+
+    return f"""
+Host {host_name}
+    Hostname {host_ip}
+    User {user}
+{identities}
+    {f"ProxyJump {jump_host}" if jump_host is not None else ""}
+"""
+
+
+parser = ArgumentParser(
+    description="Terraform State to Ansible Inventory Conversion Tool"
+)
+parser.add_argument(
+    "-o",
+    dest="output",
+    required=False,
+    default="inventory",
+    help="output directory",
+)
+parser.add_argument(
+    "--display",
+    default=False,
+    action="store_true",
+    help="set to output the generated inventory",
+)
+args = parser.parse_args()
+
+# Create output directory
+output = os.path.abspath(args.output)
+pathlib.Path(output).mkdir(parents=True, exist_ok=True)
 
 # Get state using HTTP
 url = get_env(["TF_STATE_ADDRESS", "TF_HTTP_ADDRESS"])
 username = get_env(["TF_STATE_USERNAME", "TF_HTTP_USERNAME"])
 password = get_env(["TF_STATE_PASSWORD", "TF_HTTP_PASSWORD"])
 
-print(f"Getting state from {url}", file=sys.stderr)
+print(f"Getting state from {url}")
 tf_state_request = requests.get(url, auth=(username, password), timeout=60)
 if tf_state_request.status_code != 200:
     content = json.dumps(tf_state_request.json(), indent=4)
-    print(
-        f"** ERROR [{tf_state_request.status_code}]:\n{content}",
-        file=sys.stderr,
-    )
+    print(f"** ERROR [{tf_state_request.status_code}]:\n{content}")
     sys.exit(tf_state_request.status_code)
 
 tf_state = tf_state_request.json().get("resources", [])
@@ -119,11 +167,40 @@ inventory = {
 }
 
 # Output inventory
-if len(sys.argv) > 1 and sys.argv[1] is not None:
-    path = os.path.abspath(sys.argv[1])
-    pathlib.Path(os.path.dirname(path)).mkdir(parents=True, exist_ok=True)
-    with open(path, "w+", encoding="utf-8") as f:
-        yaml.safe_dump(inventory, indent=2, stream=f)
-        print(f"Inventory at {path}", file=sys.stderr)
-else:
-    yaml.safe_dump(inventory, indent=2, stream=sys.stdout)
+inventory_path = os.path.join(output, "inventory.yml")
+with open(inventory_path, "w+", encoding="utf-8") as f:
+    yaml.safe_dump(inventory, indent=2, stream=f)
+    print(f"Inventory at {inventory_path}")
+
+# Create ssh config
+ssh_config = ["BatchMode yes", "StrictHostKeyChecking no", "LogLevel QUIET"]
+
+# Add jump hosts
+jump_hosts = {}
+for (ii_id, ii) in iis.items():
+    jump_hosts[ii["jump_host"]["hostname"]] = ii["jump_host"]
+    ssh_config.append(
+        get_ssh_config(
+            host_name=ii_id,
+            user=ii["ansible_user"],
+            host_ip=ii["ip"],
+            keypair=ii["keypair"],
+            jump_host=ii["jump_host"]["hostname"],
+        )
+    )
+
+for (host, config) in jump_hosts.items():
+    ssh_config.append(
+        get_ssh_config(
+            host_name=host,
+            user=config["user"],
+            host_ip=config["ip"],
+            keypair=config["keypair"],
+        )
+    )
+
+# Output ssh config
+ssh_config_path = os.path.join(output, "ssh.config")
+with open(ssh_config_path, "w+", encoding="utf-8") as f:
+    f.write("\r\n".join(ssh_config))
+    print(f"SSH Config at {ssh_config_path}")
