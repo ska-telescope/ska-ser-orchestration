@@ -21,6 +21,18 @@ locals {
           file_system = volume.metadata.file_system
         }
       ]
+      services = merge([
+        for rule in module.applications_ruleset.ruleset : {
+          for port in range(rule.port_range_min, rule.port_range_max + 1) :
+          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"
+        }
+      ]...)
+      scrapes = merge([
+        for rule in module.applications_ruleset.ruleset : {
+          for port in range(rule.port_range_min, rule.port_range_max + 1) :
+          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"
+        } if rule.scrape == true
+      ]...)
     }
   }
 }

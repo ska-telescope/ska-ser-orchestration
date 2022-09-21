@@ -1,3 +1,7 @@
+locals {
+  elasticsearch_node_applications = ["elasticsearch", "node_exporter"]
+}
+
 module "elasticsearch_master" {
   source   = "../openstack-instance-group"
   defaults = var.defaults
@@ -22,6 +26,7 @@ module "elasticsearch_master" {
         mount_point = "/usr/share/elasticsearch/data"
       }
     ]
+    applications = local.elasticsearch_node_applications
   }
 }
 
@@ -49,5 +54,6 @@ module "elasticsearch_data" {
         mount_point = "/usr/share/elasticsearch/data"
       }
     ]
+    applications = local.elasticsearch_node_applications
   }
 }

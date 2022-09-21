@@ -1,6 +1,6 @@
 # ---------------------- Config ---------------------- #
 terraform {
-  experiments = [module_variable_optional_attrs]
+  experiments      = [module_variable_optional_attrs]
   required_version = ">= 1.2.0"
   required_providers {
     openstack = {
@@ -8,7 +8,7 @@ terraform {
       version = "~>1.48.0"
     }
     random = {
-      source = "hashicorp/random"
+      source  = "hashicorp/random"
       version = "~>3.4.3"
     }
   }

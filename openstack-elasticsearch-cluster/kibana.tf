@@ -16,5 +16,6 @@ module "kibana" {
     keypair           = local.elasticsearch.kibana.keypair
     jump_host         = local.elasticsearch.kibana.jump_host
     volumes           = []
+    applications      = ["kibana", "node_exporter"]
   }
 }

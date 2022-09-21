@@ -26,6 +26,7 @@ variable "configuration" {
       size        = number
       mount_point = string
     })))
+    applications = optional(list(string))
   })
   description = "Instance configuration"
 }

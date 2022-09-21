@@ -9,5 +9,6 @@ locals {
     keypair           = var.defaults.keypair
     jump_host         = var.defaults.jump_host
     volumes           = {}
+    applications      = ""
   })
 }

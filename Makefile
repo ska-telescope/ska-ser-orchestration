@@ -24,7 +24,7 @@ ifeq ($(TF_AUTO_APPROVE),true)
 endif
 
 # TODO: Create terraform support in makefile and gitlab templates
-tflint:
+tf-lint:
 	@mkdir -p build/reports; \
 	rm -rf build/reports/tflint-*.xml; \
 	for TF_TARGET in $(TF_LINT_TARGET); do \
@@ -47,7 +47,7 @@ tflint:
 	fi; \
 
 
-lint: tflint
+lint: tf-lint
 	@echo "Linting Python Code"
 	@make python-lint
 

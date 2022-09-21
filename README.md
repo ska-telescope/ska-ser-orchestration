@@ -116,6 +116,32 @@ output "inventory" {
 <td>
     
 ```
+"applications" = {
+  type        = list(string)
+  default     = []
+  description = "Set of application names to get the security group rules"
+}
+
+"networks" = {
+  type        = list(string)
+  default     = []
+  description = "List of networks to use as target (source or destination)"
+}
+```
+
+```
+output "ruleset" {
+  description = "Set of security group rules to support the required applications"
+}
+```
+
+</td>
+<tr></tr>
+<td> application-ruleset </td>
+<td> Provides a mapping between a set of applications to be ran on a particular instance. and the security group rules required </td>
+<td>
+    
+```
 "elasticsearch" = {
   type = object({
     name = optional(string)
@@ -253,9 +279,10 @@ Your state file can be found at https://gitlab.com/ska-telescope/sdi/ska-ser-orc
 To cleanup, do:
 ```
 terraform destroy
+curl --header "Private-Token: $TF_HTTP_PASSWORD" --request DELETE "$TF_HTTP_ADDRESS"
 ```
 
-## Creating a single-configuration cluster: openstack-instance-group module
+## Creating a single-configuration cluster: **openstack-instance-group** module
 
 An instance group is merely a set of instances that are configured/sized the same way and are meant scaled up and down with ease. This is the basic building block for a cluster. We can, in the case of Kubernetes or Elasticsearch, have a cluster composed of multiple different instance groups, to achieve a complex topology.
 
@@ -331,7 +358,7 @@ terraform destroy
 curl --header "Private-Token: $TF_HTTP_PASSWORD" --request DELETE "$TF_HTTP_ADDRESS"
 ```
 
-## Creating multi-configuration cluster
+## Creating multi-configuration cluster: **openstack-elasticsearch** module
 
 This module is a wrapper for a set of instance groups we use to create an elasticsearch cluster. This cluster usually is composed by Elasticsearch (backend) nodes (eg, master, data, coordinating) and by Kibana node(s) (frontend). To simplify and streamline the creation of complex sets of infrastructure, we can bundle everything in its own module and add default variables (like volume definitions).
 
