@@ -2,6 +2,12 @@
 
 This repository contains custom SKA **Terraform** modules used to create base units of infrastructure that we use to create complex cloud environments. This repository **shouldn't** be used to create infrastructure, except when playing around with the **examples**. For infrastructure creation in environments, we should use https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery.
 
+## Required Versions
+
+* Terraform 1.2.x (latest 1.2.8, breaking changes in 1.3.0)
+* TFLint 0.40.1
+* Python 3.x
+
 ## Modules
 
 Currently, the following modules are provided in this repository:
