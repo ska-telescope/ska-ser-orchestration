@@ -4,9 +4,62 @@ This repository contains custom SKA **Terraform** modules used to create base un
 
 ## Required Versions
 
-* Terraform 1.2.x (latest 1.2.8, breaking changes in 1.3.0)
-* TFLint 0.40.1
-* Python 3.x
+* **Terraform** 1.2.x (see https://learn.hashicorp.com/tutorials/terraform/install-cli)
+* **TFLint** 0.40.1 (see https://github.com/terraform-linters/tflint#installation)
+* **Python** 3.x (see https://www.python.org/downloads/)
+* **Poetry** 3.x (see https://python-poetry.org/docs/#installation)
+
+## Application Security
+
+The modules used to create instances enforce the creation of a separate security group. This is so to avoid having too-permissive security groups. To use this, simply add the variable **applications** - a list of strings - to your **instance** or **instance-group** containing one or more of the supported applications:
+
+* **elasticsearch**
+  * api: 9200
+  * transport: 9300
+  * elasticsearch_exporter: 9114
+* **kibana**
+  * frontend: 5601
+* **node_exporter**
+  * api: 9100
+* **prometheus**
+  * api: 9090
+  * alert manager: 9093
+* **grafana**
+  * frontend: 3000
+* **thanos_sidecar**
+  * api: 10901
+* **thanos**
+  * querier: 9091
+  * frontend: 9095
+
+# Make Targets
+
+Currently, the following make targets are supplied:
+
+* format - Formats Python and Terraform code
+  * Requires **terraform** and **poetry**
+```
+poetry shell
+poetry install
+make format
+```
+
+* lint - Lints Python and Terraform code
+  * Requires **terraform**, **poetry** and **tflint**
+
+```
+poetry shell
+poetry install
+make lint
+```
+
+We also provide targets that are meant to be used by [infra machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery):
+* init - Initializes the modules in the target directory
+* plan - Plans the convergence operations in the target directory
+* apply - Applies the configuration in the target directory
+* destroy - Destroys the configuration in the target directory
+* refresh - Refreshes the resources declared in the target directory's configuration
+* generate-inventory - Generates the ansible inventory and ssh config of the current Terraform state
 
 ## Modules
 
@@ -17,7 +70,7 @@ Currently, the following modules are provided in this repository:
 <td> Module </td> <td> Description </td> <td> Input & Output </td>
 </tr>
 <tr>
-<td> openstack_instance </td>
+<td> openstack-instance </td>
 <td> Creates an OpenStack instance and required volumes, attaching them to the instance. If enabled, also creates a security group for the instance </td>
 <td>
     
@@ -38,6 +91,7 @@ configuration = {
       size        = number
       mount_point = string
     })))
+    applications = optional(list(string))
   })
   description = "Instance configuration"
 }
@@ -67,7 +121,7 @@ output "inventory" {
 
 </td>
 <tr></tr>
-<td> openstack_instance_group </td>
+<td> openstack-instance-group </td>
 <td> Creates a group of equally configured OpenStack instances and volumes, attaching volumes to the respective instances. Creats a security group shared by all instances of the group</td>
 <td>
     
@@ -88,6 +142,7 @@ configuration = {
       size        = number
       mount_point = string
     })))
+    applications = optional(list(string))
   })
   description = "Instance group configuration"
 }
@@ -117,34 +172,8 @@ output "inventory" {
 
 </td>
 <tr></tr>
-<td> openstack_elasticsearch_cluster </td>
+<td> openstack-elasticsearch-cluster </td>
 <td> Creates an Elasticsearch cluster (elasticsearch & kibana) using OpenStack instances. All instances are created with an instance group to facilitate up and down scaling </td>
-<td>
-    
-```
-"applications" = {
-  type        = list(string)
-  default     = []
-  description = "Set of application names to get the security group rules"
-}
-
-"networks" = {
-  type        = list(string)
-  default     = []
-  description = "List of networks to use as target (source or destination)"
-}
-```
-
-```
-output "ruleset" {
-  description = "Set of security group rules to support the required applications"
-}
-```
-
-</td>
-<tr></tr>
-<td> application-ruleset </td>
-<td> Provides a mapping between a set of applications to be ran on a particular instance. and the security group rules required </td>
 <td>
     
 ```
@@ -152,36 +181,39 @@ output "ruleset" {
   type = object({
     name = optional(string)
     master = optional(object({
-      name              = optional(string)
-      size              = optional(number)
-      flavor            = optional(string)
-      image             = optional(string)
-      availability_zone = optional(string)
-      network           = optional(string)
-      keypair           = optional(string)
-      jump_host         = optional(string)
-      data_volume_size  = optional(number)
+      name               = optional(string)
+      size               = optional(number)
+      flavor             = optional(string)
+      image              = optional(string)
+      availability_zone  = optional(string)
+      network            = optional(string)
+      keypair            = optional(string)
+      jump_host          = optional(string)
+      data_volume_size   = optional(number)
+      docker_volume_size = optional(number)
     }))
     data = optional(object({
-      name              = optional(string)
-      size              = optional(number)
-      flavor            = optional(string)
-      image             = optional(string)
-      availability_zone = optional(string)
-      network           = optional(string)
-      keypair           = optional(string)
-      jump_host         = optional(string)
-      data_volume_size  = optional(number)
+      name               = optional(string)
+      size               = optional(number)
+      flavor             = optional(string)
+      image              = optional(string)
+      availability_zone  = optional(string)
+      network            = optional(string)
+      keypair            = optional(string)
+      jump_host          = optional(string)
+      data_volume_size   = optional(number)
+      docker_volume_size = optional(number)
     }))
     kibana = optional(object({
-      name              = optional(string)
-      size              = optional(number)
-      flavor            = optional(string)
-      image             = optional(string)
-      availability_zone = optional(string)
-      network           = optional(string)
-      keypair           = optional(string)
-      jump_host         = optional(string)
+      name               = optional(string)
+      size               = optional(number)
+      flavor             = optional(string)
+      image              = optional(string)
+      availability_zone  = optional(string)
+      network            = optional(string)
+      keypair            = optional(string)
+      jump_host          = optional(string)
+      docker_volume_size = optional(number)
     }))
   })
   description = "Elasticsearch cluster configuration"
@@ -207,6 +239,32 @@ output "cluster" {
 
 output "inventory" {
   description = "Cluster ansible inventory"
+}
+```
+
+</td>
+<tr></tr>
+<td> application-ruleset </td>
+<td> Provides a mapping between a set of applications to be ran on a particular instance. and the security group rules required </td>
+<td>
+
+```
+"applications" = {
+  type        = list(string)
+  default     = []
+  description = "Set of application names to get the security group rules"
+}
+
+"networks" = {
+  type        = list(string)
+  default     = []
+  description = "List of networks to use as target (source or destination)"
+}
+```
+
+```
+output "ruleset" {
+  description = "Set of security group rules to support the required applications"
 }
 ```
 
