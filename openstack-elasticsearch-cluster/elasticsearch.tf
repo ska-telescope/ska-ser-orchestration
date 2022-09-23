@@ -23,8 +23,13 @@ module "elasticsearch_master" {
       {
         name        = "data"
         size        = local.elasticsearch.master.data_volume_size
-        mount_point = "/usr/share/elasticsearch/data"
-      }
+        mount_point = "/var/lib/stack-data"
+      },
+      {
+        name        = "docker"
+        size        = local.elasticsearch.master.docker_volume_size
+        mount_point = "/var/lib/docker"
+      },
     ]
     applications = local.elasticsearch_node_applications
   }
@@ -51,8 +56,13 @@ module "elasticsearch_data" {
       {
         name        = "data"
         size        = local.elasticsearch.data.data_volume_size
-        mount_point = "/usr/share/elasticsearch/data"
-      }
+        mount_point = "/var/lib/stack-data"
+      },
+      {
+        name        = "docker"
+        size        = local.elasticsearch.data.docker_volume_size
+        mount_point = "/var/lib/docker"
+      },
     ]
     applications = local.elasticsearch_node_applications
   }

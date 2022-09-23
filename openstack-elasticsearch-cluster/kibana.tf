@@ -15,7 +15,13 @@ module "kibana" {
     security_groups   = []
     keypair           = local.elasticsearch.kibana.keypair
     jump_host         = local.elasticsearch.kibana.jump_host
-    volumes           = []
-    applications      = ["kibana", "node_exporter"]
+    volumes = [
+      {
+        name        = "docker"
+        size        = local.elasticsearch.kibana.docker_volume_size
+        mount_point = "/var/lib/docker"
+      }
+    ]
+    applications = ["kibana", "node_exporter"]
   }
 }
