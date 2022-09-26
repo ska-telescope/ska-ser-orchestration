@@ -2,7 +2,7 @@
 
 This repository contains custom SKA **Terraform** modules used to create base units of infrastructure that we use to create complex cloud environments. This repository **shouldn't** be used to create infrastructure, except when playing around with the **examples**. For infrastructure creation in environments, we should use https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery.
 
-## Required Versions
+## Prerequisites
 
 * **Terraform** 1.2.x (see https://learn.hashicorp.com/tutorials/terraform/install-cli)
 * **TFLint** 0.40.1 (see https://github.com/terraform-linters/tflint#installation)
@@ -73,174 +73,30 @@ Currently, the following modules are provided in this repository:
 <td> openstack-instance </td>
 <td> Creates an OpenStack instance and required volumes, attaching them to the instance. If enabled, also creates a security group for the instance </td>
 <td>
-    
-```
-configuration = {
-  type = object({
-    name                  = string
-    flavor                = optional(string)
-    image                 = optional(string)
-    availability_zone     = optional(string)
-    network               = optional(string)
-    create_security_group = optional(bool)
-    security_groups       = optional(list(string))
-    keypair               = optional(string)
-    jump_host             = optional(string)
-    volumes = optional(list(object({
-      name        = string
-      size        = number
-      mount_point = string
-    })))
-    applications = optional(list(string))
-  })
-  description = "Instance configuration"
-}
 
-defaults = {
-  type = object({
-    availability_zone = string
-    flavor            = string
-    jump_host         = string
-    image             = string
-    keypair           = string
-    network           = string
-  })
-  description = "Set of default values used when creating OpenStack instances"
-}
-```
+[Inputs](openstack-instance/variables.tf)
 
-```
-output "instance" {
-  description = "Instance state"
-}
-
-output "inventory" {
-  description = "Instance ansible inventory"
-}
-```
+[Outputs](openstack-instance/outputs.tf)
 
 </td>
 <tr></tr>
 <td> openstack-instance-group </td>
 <td> Creates a group of equally configured OpenStack instances and volumes, attaching volumes to the respective instances. Creats a security group shared by all instances of the group</td>
 <td>
-    
-```
-configuration = {
-  type = object({
-    name              = string
-    size              = optional(number)
-    flavor            = optional(string)
-    image             = optional(string)
-    availability_zone = optional(string)
-    network           = optional(string)
-    security_groups   = optional(list(string))
-    keypair           = optional(string)
-    jump_host         = optional(string)
-    volumes = optional(list(object({
-      name        = string
-      size        = number
-      mount_point = string
-    })))
-    applications = optional(list(string))
-  })
-  description = "Instance group configuration"
-}
 
-defaults = {
-  type = object({
-    availability_zone = string
-    flavor            = string
-    jump_host         = string
-    image             = string
-    keypair           = string
-    network           = string
-  })
-  description = "Set of default values used when creating OpenStack instances"
-}
-```
+[Inputs](openstack-instance-group/variables.tf)
 
-```
-output "instance_group" {
-  description = "Instance group instances state"
-}
-
-output "inventory" {
-  description = "Instance group ansible inventory"
-}
-```
+[Outputs](openstack-instance-group/outputs.tf)
 
 </td>
 <tr></tr>
 <td> openstack-elasticsearch-cluster </td>
 <td> Creates an Elasticsearch cluster (elasticsearch & kibana) using OpenStack instances. All instances are created with an instance group to facilitate up and down scaling </td>
 <td>
-    
-```
-"elasticsearch" = {
-  type = object({
-    name = optional(string)
-    master = optional(object({
-      name               = optional(string)
-      size               = optional(number)
-      flavor             = optional(string)
-      image              = optional(string)
-      availability_zone  = optional(string)
-      network            = optional(string)
-      keypair            = optional(string)
-      jump_host          = optional(string)
-      data_volume_size   = optional(number)
-      docker_volume_size = optional(number)
-    }))
-    data = optional(object({
-      name               = optional(string)
-      size               = optional(number)
-      flavor             = optional(string)
-      image              = optional(string)
-      availability_zone  = optional(string)
-      network            = optional(string)
-      keypair            = optional(string)
-      jump_host          = optional(string)
-      data_volume_size   = optional(number)
-      docker_volume_size = optional(number)
-    }))
-    kibana = optional(object({
-      name               = optional(string)
-      size               = optional(number)
-      flavor             = optional(string)
-      image              = optional(string)
-      availability_zone  = optional(string)
-      network            = optional(string)
-      keypair            = optional(string)
-      jump_host          = optional(string)
-      docker_volume_size = optional(number)
-    }))
-  })
-  description = "Elasticsearch cluster configuration"
-}
 
-defaults = {
-  type = object({
-    availability_zone = string
-    flavor            = string
-    jump_host         = string
-    image             = string
-    keypair           = string
-    network           = string
-  })
-  description = "Set of default values used when creating OpenStack instances"
-}
-```
+[Inputs](openstack-elasticsearch-cluster/variables.tf)
 
-```
-output "cluster" {
-  description = "Cluster instance groups states"
-}
-
-output "inventory" {
-  description = "Cluster ansible inventory"
-}
-```
+[Outputs](openstack-elasticsearch-cluster/outputs.tf)
 
 </td>
 <tr></tr>
@@ -248,25 +104,9 @@ output "inventory" {
 <td> Provides a mapping between a set of applications to be ran on a particular instance. and the security group rules required </td>
 <td>
 
-```
-"applications" = {
-  type        = list(string)
-  default     = []
-  description = "Set of application names to get the security group rules"
-}
+[Inputs](application-ruleset/variables.tf)
 
-"networks" = {
-  type        = list(string)
-  default     = []
-  description = "List of networks to use as target (source or destination)"
-}
-```
-
-```
-output "ruleset" {
-  description = "Set of security group rules to support the required applications"
-}
-```
+[Outputs](application-ruleset/outputs.tf)
 
 </td>
 </table>
@@ -333,9 +173,9 @@ terraform apply
 Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.
 
 ```
-sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"
 mkdir -p keys && cp <path to ska-techops.pem> keys
-ansible all -m ping -i inventory/inventory.yml
+ansible all -m ping
 ```
 
 Your state file can be found at https://gitlab.com/ska-telescope/sdi/ska-ser-orchestration/-/terraform.
@@ -409,9 +249,9 @@ terraform apply
 In this particular API, we are allowed to change this property - flavor - without recreating the resource, being done in place. While the code is running, you can see the instances being resized in OpenStack. When it completes, we can run generate the ansible inventory:
 
 ```
-sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"
 mkdir -p keys && cp <path to ska-techops.pem> keys
-ansible all -m ping -i inventory/inventory.yml
+ansible all -m ping
 ```
 
 Again, your state file can be found at https://gitlab.com/ska-telescope/sdi/ska-ser-orchestration/-/terraform.
@@ -470,9 +310,9 @@ terraform apply
 Again, we can generate the ansible inventory and run commands against our instances:
 
 ```
-sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
+sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"
 mkdir -p keys && cp <path to ska-techops.pem> keys
-ansible all -m ping -i inventory/inventory.yml
+ansible all -m ping
 ```
 
 We can now bump our master instance group within the cluster to three nodes:
@@ -510,8 +350,8 @@ terraform apply
 This will create two more nodes. Reducing the size of the group, does the opposite. Currently, the scaling down procedure is done sequencially, from higher instance id to lower. We simply need to re-generate the inventory:
 
 ```
-sh -c "../../scripts/tfstate_to_ansible_inventory.py inventory/inventory.yml"
-ansible all -m ping -i inventory/inventory.yml
+sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"
+ansible all -m ping
 ```
 
 To cleanup, do:

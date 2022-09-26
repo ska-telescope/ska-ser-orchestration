@@ -119,50 +119,61 @@ if tf_state_request.status_code != 200:
 tf_state = tf_state_request.json().get("resources", [])
 
 # Get class inventories
-cis = get_inventory(tf_state, "cluster")
-igis = get_inventory(tf_state, "instance_group")
-iis = get_inventory(tf_state, "instance")
+cluster_inventories = get_inventory(tf_state, "cluster")
+instance_group_inventories = get_inventory(tf_state, "instance_group")
+instance_inventories = get_inventory(tf_state, "instance")
 
 # Parse groupings
-igs = {}
-igs_in_c = []
-is_with_parent = []
+instance_groups = {}
+instance_groups_in_clusters = []
+instances_with_parent = []
 
-for (ci_id, ci) in cis.items():
-    for (ig_id, ig) in ci[CHILDREN_KEY].items():
-        igs_in_c.append(ig_id)
-    for (i_id, i) in ci[HOSTS_KEY].items():
-        is_with_parent.append(i_id)
+for (cluster_id, cluster) in cluster_inventories.items():
+    for instance_group_id in cluster[CHILDREN_KEY]:
+        instance_groups_in_clusters.append(instance_group_id)
+    for instance_id in cluster[HOSTS_KEY]:
+        instances_with_parent.append(instance_id)
 
-for (ig_id, ig) in igis.items():
-    igs[ig_id] = {HOSTS_KEY: ig[HOSTS_KEY]}
-    for (i_id, i) in ig[HOSTS_KEY].items():
-        is_with_parent.append(i_id)
+for (instance_group_id, instance_group) in instance_group_inventories.items():
+    instance_groups[instance_group_id] = {HOSTS_KEY: instance_group[HOSTS_KEY]}
+    for instance_id in instance_group[HOSTS_KEY]:
+        instances_with_parent.append(instance_id)
 
 # Create inventory
 inventory = {
     **{  # all with groups and single hosts
         ALL_KEY: {
             CHILDREN_KEY: {
-                **{c: None for c in cis},
-                **{ig: None for ig in igis if ig not in igs_in_c},
+                **{cluster: None for cluster in cluster_inventories},
+                **{
+                    instance_group: None
+                    for instance_group in instance_group_inventories
+                    if instance_group not in instance_groups_in_clusters
+                },
             },
             HOSTS_KEY: {
-                i_id: i
-                for (i_id, i) in iis.items()
-                if i_id not in is_with_parent
+                instance_id: instance
+                for (instance_id, instance) in instance_inventories.items()
+                if instance_id not in instances_with_parent
             },
         }
     },
     **{  # cluster with instance groups and hosts
-        c_id: {
-            CHILDREN_KEY: {ig_id: None for ig_id in c[CHILDREN_KEY]},
-            HOSTS_KEY: c[HOSTS_KEY],
+        cluster_id: {
+            CHILDREN_KEY: {
+                instance_group_id: None
+                for instance_group_id in cluster[CHILDREN_KEY]
+            },
+            HOSTS_KEY: cluster[HOSTS_KEY],
         }
-        for (c_id, c) in cis.items()
+        for (cluster_id, cluster) in cluster_inventories.items()
     },
     **{  # instance groups
-        ig_id: {HOSTS_KEY: ig[HOSTS_KEY]} for (ig_id, ig) in igis.items()
+        instance_group_id: {HOSTS_KEY: instance_group[HOSTS_KEY]}
+        for (
+            instance_group_id,
+            instance_group,
+        ) in instance_group_inventories.items()
     },
 }
 
@@ -177,15 +188,15 @@ ssh_config = ["BatchMode yes", "StrictHostKeyChecking no", "LogLevel QUIET"]
 
 # Add jump hosts
 jump_hosts = {}
-for (ii_id, ii) in iis.items():
-    jump_hosts[ii["jump_host"]["hostname"]] = ii["jump_host"]
+for (instance_id, instance) in instance_inventories.items():
+    jump_hosts[instance["jump_host"]["hostname"]] = instance["jump_host"]
     ssh_config.append(
         get_ssh_config(
-            host_name=ii_id,
-            user=ii["ansible_user"],
-            host_ip=ii["ip"],
-            keypair=ii["keypair"],
-            jump_host=ii["jump_host"]["hostname"],
+            host_name=instance_id,
+            user=instance["ansible_user"],
+            host_ip=instance["ip"],
+            keypair=instance["keypair"],
+            jump_host=instance["jump_host"]["hostname"],
         )
     )
 

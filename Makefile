@@ -14,10 +14,6 @@ TF_ARGUMENTS?=
 
 TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
 
-ifeq ($(TF_LINT_TARGET),)
-    TF_LINT_TARGET := $(shell find . -name 'terraform.tf' | sed 's/.terraform.tf//' | sort | uniq )
-endif
-
 ifneq ($(TF_TARGET),)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -target=$(TF_TARGET)
 endif
@@ -31,7 +27,7 @@ ifdef PLAYBOOKS_ROOT_DIR
 TF_INVENTORY_DIR="$(PLAYBOOKS_ROOT_DIR)"
 endif
 
-lint: 
+lint:
 	@echo "Linting Terraform Code"
 	@make terraform-lint
 	@echo "Linting Python Code"
