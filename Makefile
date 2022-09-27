@@ -3,16 +3,15 @@
 -include .make/terraform.mk
 -include PrivateRules.mak
 
+SHELL=/usr/bin/env bash
+
 PYTHON_LINT_TARGET=scripts
-TF_LINT_TARGET?=
 
 TF_ROOT_DIR?=.
+TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
 TF_TARGET?=
 TF_AUTO_APPROVE?=
-
 TF_ARGUMENTS?=
-
-TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
 
 ifneq ($(TF_TARGET),)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -target=$(TF_TARGET)
@@ -22,7 +21,6 @@ ifeq ($(TF_AUTO_APPROVE),true)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -auto-approve
 endif
 
-# Ansible inventory is generated on the corresponding installation folder
 ifdef PLAYBOOKS_ROOT_DIR
 TF_INVENTORY_DIR="$(PLAYBOOKS_ROOT_DIR)"
 endif
