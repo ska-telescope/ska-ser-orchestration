@@ -1,0 +1,16 @@
+output "cluster" {
+  description = "Cluster instance groups states"
+  value = {
+    name = local.elasticsearch.name
+    instance_groups = {
+      master = module.elasticsearch_master.instance_group.instances
+      data   = module.elasticsearch_data.instance_group.instances
+      kibana = module.kibana.instance_group.instances
+    }
+  }
+}
+
+output "inventory" {
+  description = "Cluster ansible inventory"
+  value       = local.inventory
+}
