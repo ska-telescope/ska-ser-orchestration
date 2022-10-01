@@ -5,11 +5,11 @@ an ansible-inventory file, in YAML format.
 
 import base64
 import json
+import logging
 import os
 import pathlib
 import sys
 from argparse import ArgumentParser
-import logging
 
 import requests
 import yaml
@@ -25,7 +25,7 @@ SSH_KEY_LOCATIONS = [
     ".",
     "..",
 ]
-GRAPHQL_URL =  "https://gitlab.com/api/graphql"
+GRAPHQL_URL = "https://gitlab.com/api/graphql"
 LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "INFO")
 LOGGING_FORMAT = (
     "%(asctime)s [level=%(levelname)s] "
@@ -49,12 +49,12 @@ def get_env(variables, default=None):
     return default
 
 
-def get_inventory(state, inventory_type):
+def get_inventory(this_tf_state, inventory_type):
     """
     Gets all the inventories of a given type
     """
     result = {}
-    for resource in state:
+    for resource in this_tf_state:
         if (
             resource["mode"] == "managed"
             and resource["type"] == "null_resource"
@@ -119,20 +119,37 @@ url = get_env(["TF_STATE_ADDRESS", "TF_HTTP_ADDRESS"])
 username = get_env(["TF_STATE_USERNAME", "TF_HTTP_USERNAME"])
 password = get_env(["TF_STATE_PASSWORD", "TF_HTTP_PASSWORD"])
 project_id = get_env(["GITLAB_PROJECT_ID", "TF_HTTP_PASSWORD"])
-state_base_url = "https://gitlab.com/api/v4/projects/{project_id}/terraform/state/".format(project_id=project_id)
+STATE_BASE_URL = (
+    f"https://gitlab.com/api/v4/projects/{project_id}/terraform/state/"
+)
 
 # get list of tfstates using graphql API
-gql_query = {"query": "query { project(fullPath: \"ska-telescope/sdi/ska-ser-infra-machinery\") { name terraformStates { nodes {name}}}}"}
-headers = {'Content-type': 'application/json', 'Accept': '*/*', 'Authorization': "Bearer {token}".format(token=password)}
+gql_query = {
+    "query": (
+        "query { project("
+        'fullPath: "ska-telescope/sdi/ska-ser-infra-machinery") '
+        " { name terraformStates { nodes {name}}}}"
+    )
+}
+headers = {
+    "Content-type": "application/json",
+    "Accept": "*/*",
+    "Authorization": f"Bearer {password}",
+}
+
 try:
-    tf_all_states_request = requests.post(GRAPHQL_URL, json=gql_query, headers=headers, timeout=60)
+    tf_all_states_request = requests.post(
+        GRAPHQL_URL, json=gql_query, headers=headers, timeout=60
+    )
     if tf_all_states_request.status_code != 200:
         content = json.dumps(tf_all_states_request.json(), indent=4)
-        log.critical(f"** ERROR [{tf_all_states_request.status_code}]:\n{content}")
+        log.critical(
+            "** ERROR [%s]:\n%s", tf_all_states_request.status_code, content
+        )
         sys.exit(tf_all_states_request.status_code)
 except requests.exceptions.RequestException as err:
-        log.critical(f"** error getting tfstates: {err}")
-        sys.exit(-1)
+    log.critical("** error getting tfstates: %s", err)
+    sys.exit(-1)
 
 # extract the tfstates
 states = tf_all_states_request.json().get("data", {})
@@ -147,15 +164,21 @@ total_instance_inventories = {}
 
 # iterate over tfstate names to get the actual states
 for state in states["project"]["terraformStates"]["nodes"]:
-    log.info("Getting state from {state_base_url}/{state}".format(state_base_url=state_base_url,state=state["name"]))
+    log.info("Getting state from %s/%s", STATE_BASE_URL, state["name"])
     try:
-        tf_state_request = requests.get(state_base_url+state["name"], auth=(username, password), timeout=60)
+        tf_state_request = requests.get(
+            STATE_BASE_URL + state["name"],
+            auth=(username, password),
+            timeout=60,
+        )
         if tf_state_request.status_code != 200:
             content = json.dumps(tf_state_request.json(), indent=4)
-            log.critical(f"** ERROR [{tf_state_request.status_code}]:\n{content}")
+            log.critical(
+                "** ERROR [%s]:\n%s", tf_state_request.status_code, content
+            )
             sys.exit(tf_state_request.status_code)
     except requests.exceptions.RequestException as err:
-        log.critical("** error getting tfstate[{state}]: {err}".format(state=state["name"], err=err))
+        log.critical("** error getting tfstate[%s]: %s", state["name"], err)
         sys.exit(-1)
 
     tf_state = tf_state_request.json().get("resources", [])
@@ -171,13 +194,22 @@ for state in states["project"]["terraformStates"]["nodes"]:
         for instance_id in cluster[HOSTS_KEY]:
             instances_with_parent.append(instance_id)
 
-    for (instance_group_id, instance_group) in instance_group_inventories.items():
-        instance_groups[instance_group_id] = {HOSTS_KEY: instance_group[HOSTS_KEY]}
+    for (
+        instance_group_id,
+        instance_group,
+    ) in instance_group_inventories.items():
+        instance_groups[instance_group_id] = {
+            HOSTS_KEY: instance_group[HOSTS_KEY]
+        }
         for instance_id in instance_group[HOSTS_KEY]:
             instances_with_parent.append(instance_id)
     total_cluster_inventories = total_cluster_inventories | cluster_inventories
-    total_instance_group_inventories = total_instance_group_inventories | instance_group_inventories
-    total_instance_inventories = total_instance_inventories | instance_inventories
+    total_instance_group_inventories = (
+        total_instance_group_inventories | instance_group_inventories
+    )
+    total_instance_inventories = (
+        total_instance_inventories | instance_inventories
+    )
 
 
 # Create inventory
@@ -194,7 +226,10 @@ inventory = {
             },
             HOSTS_KEY: {
                 instance_id: instance
-                for (instance_id, instance) in total_instance_inventories.items()
+                for (
+                    instance_id,
+                    instance,
+                ) in total_instance_inventories.items()
                 if instance_id not in instances_with_parent
             },
         }
@@ -222,7 +257,7 @@ inventory = {
 inventory_path = os.path.join(output, "inventory.yml")
 with open(inventory_path, "w+", encoding="utf-8") as f:
     yaml.safe_dump(inventory, indent=2, stream=f)
-    log.info(f"Inventory at {inventory_path}")
+    log.info("Inventory at %s", inventory_path)
 
 # Create ssh config
 ssh_config = ["BatchMode yes", "StrictHostKeyChecking no", "LogLevel QUIET"]
@@ -255,4 +290,4 @@ for (host, config) in jump_hosts.items():
 ssh_config_path = os.path.join(output, "ssh.config")
 with open(ssh_config_path, "w+", encoding="utf-8") as f:
     f.write("\n".join(ssh_config))
-    log.info(f"SSH Config at {ssh_config_path}")
+    log.info("SSH Config at %s", ssh_config_path)
