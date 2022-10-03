@@ -15,6 +15,12 @@ locals {
       jump_host             = local.configuration.jump_host
       volumes               = local.configuration.volumes
       applications          = local.configuration.applications
+      metadata = merge({
+        name    = local.configuration.name
+        user    = local.user
+        keypair = data.openstack_compute_keypair_v2.keypair.name
+      }, local.configuration.metadata)
+
     }
   }
 }

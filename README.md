@@ -173,7 +173,7 @@ terraform init --upgrade
 terraform apply
 ```
 
-Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.  The following script will generate an inventory from *all* the available TF state files associated with the nominated GitLab project:
+Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.  The following script will generate an inventory from *all* the available TF state files associated with the nominated GitLab project.  This list can be reduced by setting the `${ENVIRONMENT}` value (or using the switch `-e`):
 
 ```
 sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"

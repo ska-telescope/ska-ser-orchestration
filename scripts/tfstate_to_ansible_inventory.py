@@ -103,6 +103,14 @@ parser.add_argument(
     help="output directory",
 )
 parser.add_argument(
+    "-e",
+    dest="environment",
+    required=False,
+    default=None,
+    help="target environment",
+)
+
+parser.add_argument(
     "--display",
     default=False,
     action="store_true",
@@ -194,6 +202,8 @@ total_instance_inventories = {}
 
 # iterate over tfstate names to get the actual states
 for state in states["project"]["terraformStates"]["nodes"]:
+    if not (args.environment is None or state["name"].startswith(args.environment)):
+        continue
     log.info("Getting state from %s/%s", STATE_BASE_URL, state["name"])
     try:
         tf_state_request = requests.get(

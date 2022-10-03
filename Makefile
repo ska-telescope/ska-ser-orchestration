@@ -53,4 +53,4 @@ refresh:
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
 generate-inventory:
-	@sh -c "scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR)"
+	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)"

@@ -10,5 +10,6 @@ locals {
     jump_host         = var.defaults.jump_host
     volumes           = {}
     applications      = ""
+    metadata          = ""
   })
 }
