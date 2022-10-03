@@ -17,8 +17,8 @@ locals {
       applications          = local.configuration.applications
       metadata = merge({
         name    = local.configuration.name
-        user    = local.user
-        keypair = data.openstack_compute_keypair_v2.keypair.name
+        user    = local.configuration.user
+        keypair = local.configuration.keypair
       }, local.configuration.metadata)
 
     }
