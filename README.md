@@ -143,12 +143,15 @@ module "instance" {
   configuration = {
     name = local.instance_name
     flavor = "m1.large"
+    metadata = {
+      mykey = "blah"
+    }
     volumes = [
       {
         mount_point = "/home"
         name = "home"
         size = 30
-      } 
+      }
     ]
   }
 }
@@ -170,7 +173,7 @@ terraform init --upgrade
 terraform apply
 ```
 
-Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.
+Take your time to inspect what resources are ought to be created by Terraform, and then apply your configuration. We now need to generate an ansible inventory from our infrastructure, so that we can run Ansible commands on it.  The following script will generate an inventory from *all* the available TF state files associated with the nominated GitLab project:
 
 ```
 sh -c "../../scripts/tfstate_to_ansible_inventory.py -o inventory"

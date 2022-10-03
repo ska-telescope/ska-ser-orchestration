@@ -11,11 +11,11 @@ resource "openstack_compute_instance_v2" "instance" {
   key_pair            = data.openstack_compute_keypair_v2.keypair.name
   security_groups     = concat(local.configuration.security_groups, local.instance_security_group)
   stop_before_destroy = true
-  metadata = {
+  metadata = merge({
     name    = local.configuration.name
     user    = local.user
     keypair = data.openstack_compute_keypair_v2.keypair.name
-  }
+  }, length(local.configuration.metadata) > 0 ? local.configuration.metadata : {})
 
   network {
     uuid = data.openstack_networking_network_v2.network.id

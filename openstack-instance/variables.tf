@@ -21,6 +21,7 @@ variable "configuration" {
     security_groups       = optional(list(string))
     keypair               = optional(string)
     jump_host             = optional(string)
+    metadata              = optional(map(string))
     volumes = optional(list(object({
       name        = string
       size        = number
