@@ -178,11 +178,10 @@ try:
         GRAPHQL_URL, json=gql_query, headers=headers, timeout=60
     )
     if tf_all_states_request.status_code != 200:
-        content = json.dumps(tf_all_states_request.json(), indent=4)
         log.critical(
             "** ERROR get tfstates [%s]:\n%s",
             tf_all_states_request.status_code,
-            content,
+            tf_all_states_request.content(),
         )
         sys.exit(tf_all_states_request.status_code)
 except requests.exceptions.RequestException as err:
@@ -214,9 +213,10 @@ for state in states["project"]["terraformStates"]["nodes"]:
             timeout=60,
         )
         if tf_state_request.status_code != 200:
-            content = json.dumps(tf_state_request.json(), indent=4)
             log.critical(
-                "** ERROR [%s]:\n%s", tf_state_request.status_code, content
+                "** ERROR [%s]:\n%s",
+                tf_state_request.status_code,
+                tf_state_request.content(),
             )
             sys.exit(tf_state_request.status_code)
     except requests.exceptions.RequestException as err:

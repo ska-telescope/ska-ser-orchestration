@@ -15,11 +15,7 @@ locals {
       jump_host             = local.configuration.jump_host
       volumes               = local.configuration.volumes
       applications          = local.configuration.applications
-      metadata = merge({
-        name    = local.configuration.name
-        user    = local.configuration.user
-        keypair = local.configuration.keypair
-      }, local.configuration.metadata)
+      metadata              = local.configuration.metadata
 
     }
   }
