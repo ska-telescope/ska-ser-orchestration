@@ -15,6 +15,8 @@ locals {
       jump_host             = local.configuration.jump_host
       volumes               = local.configuration.volumes
       applications          = local.configuration.applications
+      metadata              = local.configuration.metadata
+
     }
   }
 }
