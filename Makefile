@@ -7,6 +7,7 @@ SHELL=/usr/bin/env bash
 
 PYTHON_LINT_TARGET=scripts
 
+PYTHON?=python3
 TF_ROOT_DIR?=.
 TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
 TF_TARGET?=
@@ -63,6 +64,6 @@ destroy: ## Destroy cluster. Filter with TF_TARGET
 refresh: ## Update the state on the backend. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
-generate-inventory: ## Generate the Ansible inventory and ssh configuration
-	@sh -c "scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR)"
+generate-inventory:
+	$(PYTHON) scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" -d "$(DATACENTER)"
 
