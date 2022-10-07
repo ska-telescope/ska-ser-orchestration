@@ -210,7 +210,9 @@ total_instance_inventories = {}
 for state in states["project"]["terraformStates"]["nodes"]:
     if args.environment is not None:
         if args.datacenter is not None:
-            if not state["name"].startswith(f'{args.datacenter}-{args.environment}'):
+            if not state["name"].startswith(
+                f"{args.datacenter}-{args.environment}"
+            ):
                 continue
         elif not state["name"].startswith(args.environment):
             continue
