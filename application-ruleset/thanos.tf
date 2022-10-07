@@ -14,5 +14,19 @@ locals {
       ports     = [9095]
       target    = "network"
     }
+    thanos_store_ingress = {
+      service   = "thanos_store"
+      direction = "ingress"
+      protocol  = "tcp"
+      ports     = [19090]
+      target    = "network"
+    }
+    thanos_compactor_ingress = {
+      service   = "thanos_compactor"
+      direction = "ingress"
+      protocol  = "tcp"
+      ports     = [19091]
+      target    = "network"
+    }
   }
 }
