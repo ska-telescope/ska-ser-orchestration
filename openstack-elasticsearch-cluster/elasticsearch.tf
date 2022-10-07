@@ -32,6 +32,9 @@ module "elasticsearch_master" {
       },
     ]
     applications = local.elasticsearch_node_applications
+    metadata = {
+      role = "master"
+    }
   }
 }
 
@@ -65,5 +68,8 @@ module "elasticsearch_data" {
       },
     ]
     applications = local.elasticsearch_node_applications
+    metadata = {
+      role = "data"
+    }
   }
 }

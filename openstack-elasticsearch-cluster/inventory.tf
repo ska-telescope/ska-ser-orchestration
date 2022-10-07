@@ -6,7 +6,9 @@ locals {
         module.elasticsearch_data.inventory,
         module.kibana.inventory
       ]...)
-      hosts = {}
+      hosts = merge([
+        module.loadbalancer.inventory
+      ]...)
     }
   }
 }

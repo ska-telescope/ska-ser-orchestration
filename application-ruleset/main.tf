@@ -1,12 +1,14 @@
 locals {
   ruleset = {
-    elasticsearch  = local.elasticsearch_rules
-    kibana         = local.kibana_rules
-    node_exporter  = local.node_exporter_rules
-    prometheus     = local.prometheus_rules
-    grafana        = local.grafana_rules
-    thanos_sidecar = local.thanos_sidecar_rules
-    thanos         = local.thanos_rules
+    elasticsearch    = local.elasticsearch_rules
+    kibana           = local.kibana_rules
+    node_exporter    = local.node_exporter_rules
+    prometheus       = local.prometheus_rules
+    grafana          = local.grafana_rules
+    thanos_sidecar   = local.thanos_sidecar_rules
+    thanos           = local.thanos_rules
+    lb               = local.lb_rules
+    lb_elasticsearch = local.lb_elasticsearch_rules
   }
 
   application_ruleset = flatten([

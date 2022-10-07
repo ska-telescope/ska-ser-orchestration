@@ -18,5 +18,10 @@ locals {
       size               = 1
       docker_volume_size = 20
     }
+    loadbalancer = {
+      name               = "loadbalancer"
+      docker_volume_size = 20
+      floating_ip        = {}
+    }
   })
 }

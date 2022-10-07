@@ -23,5 +23,8 @@ module "kibana" {
       }
     ]
     applications = ["kibana", "node_exporter"]
+    metadata = {
+      role = "kibana"
+    }
   }
 }

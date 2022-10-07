@@ -216,6 +216,7 @@ for state in states["project"]["terraformStates"]["nodes"]:
                 continue
         elif not state["name"].startswith(args.environment):
             continue
+
     log.info("Getting state from %s/%s", STATE_BASE_URL, state["name"])
     try:
         tf_state_request = requests.get(
