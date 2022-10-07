@@ -5,6 +5,7 @@ locals {
       ansible_user               = local.user
       ansible_python_interpreter = "python3"
       ip                         = openstack_compute_instance_v2.instance.access_ip_v4
+      floating_ip                = local.floating_ip
       keypair                    = data.openstack_compute_keypair_v2.keypair.name
       jump_host = {
         hostname = data.openstack_compute_instance_v2.jump_host.name
