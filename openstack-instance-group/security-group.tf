@@ -31,7 +31,7 @@ resource "openstack_networking_secgroup_rule_v2" "ssh_sg_rule" {
 
 module "applications_ruleset" {
   source       = "../application-ruleset"
-  applications = local.configuration.applications
+  applications = concat(local.configuration.applications, ["default"])
   networks     = [local.configuration.network]
   providers = {
     openstack = openstack

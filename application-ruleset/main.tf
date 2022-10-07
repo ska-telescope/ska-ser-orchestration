@@ -1,14 +1,15 @@
 locals {
   ruleset = {
-    elasticsearch    = local.elasticsearch_rules
-    kibana           = local.kibana_rules
-    node_exporter    = local.node_exporter_rules
-    prometheus       = local.prometheus_rules
-    grafana          = local.grafana_rules
-    thanos_sidecar   = local.thanos_sidecar_rules
-    thanos           = local.thanos_rules
-    lb               = local.lb_rules
-    lb_elasticsearch = local.lb_elasticsearch_rules
+    default               = local.default_rules
+    elasticsearch         = local.elasticsearch_rules
+    kibana                = local.kibana_rules
+    node_exporter         = local.node_exporter_rules
+    prometheus            = local.prometheus_rules
+    grafana               = local.grafana_rules
+    thanos_sidecar        = local.thanos_sidecar_rules
+    thanos                = local.thanos_rules
+    haproxy               = local.haproxy_rules
+    haproxy_elasticsearch = local.haproxy_elasticsearch_rules
   }
 
   application_ruleset = flatten([
@@ -32,6 +33,22 @@ locals {
   ]))...)
 
   ipv4_ruleset = merge(distinct(flatten([
+    [ # Port-less rules
+      for rule in local.application_ruleset : {
+        for cidr in lookup(local.remote_ipv4_cidrs, rule.id) :
+        "${rule.id}_${substr(md5(cidr), 0, 5)}" => {
+          direction        = rule.direction
+          ethertype        = "IPv4"
+          protocol         = rule.protocol
+          port_range_min   = null
+          port_range_max   = null
+          remote_ip_prefix = cidr
+          description      = "${rule.service} ${rule.direction} for port ${rule.protocol} by cidr ${cidr}"
+          service          = rule.service
+          scrape           = lookup(rule, "scrape", false)
+        }
+      } if length(lookup(rule, "ports", [])) == 0 && length(lookup(rule, "port_range", [])) == 0
+    ],
     [ # Set of port rules
       for rule in local.application_ruleset : [
         for port in rule.ports : {

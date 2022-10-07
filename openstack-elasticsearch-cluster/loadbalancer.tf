@@ -29,7 +29,7 @@ module "loadbalancer" {
         mount_point = "/var/lib/docker"
       }
     ]
-    applications = ["lb_elasticsearch", "node_exporter"]
+    applications = ["haproxy", "haproxy_elasticsearch", "node_exporter"]
     metadata = {
       role = "loadbalancer"
     }
