@@ -15,7 +15,8 @@ output "instance" {
       })
     ]
     network = {
-      ipv4 = openstack_compute_instance_v2.instance.access_ip_v4
+      ipv4        = openstack_compute_instance_v2.instance.access_ip_v4
+      floating_ip = local.floating_ip
     }
     user            = local.user
     security_groups = local.configuration.security_groups
