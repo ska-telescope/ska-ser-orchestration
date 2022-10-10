@@ -16,7 +16,7 @@ ENVIRONMENT?=
 DATACENTER?=
 GITLAB_PROJECT_ID?=
 
-GEN_INVENTORY_ARGUMENTS?=
+GENERATE_INVENTORY_ARGS?=
 
 ifneq ($(TF_TARGET),)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -target=$(TF_TARGET)
@@ -31,7 +31,7 @@ TF_INVENTORY_DIR="$(PLAYBOOKS_ROOT_DIR)"
 endif
 
 ifneq ($(DATACENTER),)
-    GENERATE_INVENTORY_ARGUMENTS := $(GENERATE_INVENTORY_ARGUMENTS) -d=$(DATACENTER)
+    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -d "$(DATACENTER)"
 endif
 
 vars:  ## Current variables
@@ -78,5 +78,5 @@ refresh: ## Update the state on the backend. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
 generate-inventory:
-	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGUMENTS)
+	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS)
 
