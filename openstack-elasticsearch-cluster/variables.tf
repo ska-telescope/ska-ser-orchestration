@@ -25,6 +25,7 @@ variable "elasticsearch" {
       jump_host          = optional(string)
       data_volume_size   = optional(number)
       docker_volume_size = optional(number)
+      roles              = optional(list(string))
     }))
     data = optional(object({
       name               = optional(string)
@@ -37,6 +38,7 @@ variable "elasticsearch" {
       jump_host          = optional(string)
       data_volume_size   = optional(number)
       docker_volume_size = optional(number)
+      roles              = optional(list(string))
     }))
     kibana = optional(object({
       name               = optional(string)

@@ -14,7 +14,7 @@ module "loadbalancer" {
   }
 
   configuration = {
-    name              = join("_", [local.elasticsearch.name, local.elasticsearch.loadbalancer.name])
+    name              = join("-", [local.elasticsearch.name, local.elasticsearch.loadbalancer.name])
     flavor            = local.elasticsearch.loadbalancer.flavor
     image             = local.elasticsearch.loadbalancer.image
     availability_zone = local.elasticsearch.loadbalancer.availability_zone
@@ -29,9 +29,9 @@ module "loadbalancer" {
         mount_point = "/var/lib/docker"
       }
     ]
-    applications = ["haproxy", "haproxy_elasticsearch", "node_exporter"]
+    applications = local.role_applications["loadbalancer"]
     metadata = {
-      role = "loadbalancer"
+      roles = join(",", ["loadbalancer"])
     }
     floating_ip = {
       create  = coalesce(local.floating_ip_configuration.create, true)

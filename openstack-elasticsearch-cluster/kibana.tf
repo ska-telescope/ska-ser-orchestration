@@ -6,7 +6,7 @@ module "kibana" {
   }
 
   configuration = {
-    name              = join("_", [local.elasticsearch.name, local.elasticsearch.kibana.name])
+    name              = join("-", [local.elasticsearch.name, local.elasticsearch.kibana.name])
     size              = local.elasticsearch.kibana.size
     flavor            = local.elasticsearch.kibana.flavor
     image             = local.elasticsearch.kibana.image
@@ -22,9 +22,9 @@ module "kibana" {
         mount_point = "/var/lib/docker"
       }
     ]
-    applications = ["kibana", "node_exporter"]
+    applications = local.role_applications["kibana"]
     metadata = {
-      role = "kibana"
+      roles = join(",", ["kibana"])
     }
   }
 }
