@@ -6,3 +6,4 @@ inventory.yml
 *.tfstate
 requirements.txt
 ssh.config
+PrivateRules.mak

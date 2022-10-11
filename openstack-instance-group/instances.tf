@@ -3,7 +3,7 @@ locals {
   instance_configurations = {
     for instance_id in local.instance_ids :
     (instance_id) => {
-      name                  = join("_", [local.configuration.name, instance_id])
+      name                  = join("-", [local.configuration.name, instance_id])
       group                 = local.configuration.name
       flavor                = local.configuration.flavor
       image                 = local.configuration.image

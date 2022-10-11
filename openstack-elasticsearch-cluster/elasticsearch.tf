@@ -1,5 +1,6 @@
 locals {
-  elasticsearch_node_applications = ["elasticsearch", "node_exporter"]
+  master_roles = length(local.elasticsearch.master.roles) > 0 ? local.elasticsearch.master.roles : ["master"]
+  data_roles   = length(local.elasticsearch.data.roles) > 0 ? local.elasticsearch.data.roles : ["data"]
 }
 
 module "elasticsearch_master" {
@@ -10,7 +11,7 @@ module "elasticsearch_master" {
   }
 
   configuration = {
-    name              = join("_", [local.elasticsearch.name, local.elasticsearch.master.name])
+    name              = join("-", [local.elasticsearch.name, local.elasticsearch.master.name])
     size              = local.elasticsearch.master.size
     flavor            = local.elasticsearch.master.flavor
     image             = local.elasticsearch.master.image
@@ -31,7 +32,10 @@ module "elasticsearch_master" {
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = local.elasticsearch_node_applications
+    applications = distinct(flatten([for role in local.master_roles : local.role_applications[role]]))
+    metadata = {
+      roles = join(",", local.master_roles)
+    }
   }
 }
 
@@ -43,7 +47,7 @@ module "elasticsearch_data" {
   }
 
   configuration = {
-    name              = join("_", [local.elasticsearch.name, local.elasticsearch.data.name])
+    name              = join("-", [local.elasticsearch.name, local.elasticsearch.data.name])
     size              = local.elasticsearch.data.size
     flavor            = local.elasticsearch.data.flavor
     image             = local.elasticsearch.data.image
@@ -64,6 +68,9 @@ module "elasticsearch_data" {
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = local.elasticsearch_node_applications
+    applications = distinct(flatten([for role in local.data_roles : local.role_applications[role]]))
+    metadata = {
+      roles = join(",", local.data_roles)
+    }
   }
 }

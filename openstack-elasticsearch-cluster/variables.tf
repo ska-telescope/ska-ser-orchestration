@@ -25,6 +25,7 @@ variable "elasticsearch" {
       jump_host          = optional(string)
       data_volume_size   = optional(number)
       docker_volume_size = optional(number)
+      roles              = optional(list(string))
     }))
     data = optional(object({
       name               = optional(string)
@@ -37,6 +38,7 @@ variable "elasticsearch" {
       jump_host          = optional(string)
       data_volume_size   = optional(number)
       docker_volume_size = optional(number)
+      roles              = optional(list(string))
     }))
     kibana = optional(object({
       name               = optional(string)
@@ -48,6 +50,21 @@ variable "elasticsearch" {
       keypair            = optional(string)
       jump_host          = optional(string)
       docker_volume_size = optional(number)
+    }))
+    loadbalancer = optional(object({
+      name               = optional(string)
+      flavor             = optional(string)
+      image              = optional(string)
+      availability_zone  = optional(string)
+      network            = optional(string)
+      keypair            = optional(string)
+      jump_host          = optional(string)
+      docker_volume_size = optional(number)
+      floating_ip = optional(object({
+        create  = optional(bool)
+        address = optional(string)
+        network = optional(string)
+      }))
     }))
   })
   description = "Elasticsearch cluster configuration"

@@ -34,6 +34,8 @@ ifneq ($(DATACENTER),)
     GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -d "$(DATACENTER)"
 endif
 
+-include PrivateRules.mak
+
 vars:  ## Current variables
 	@echo "Current variable settings:"
 	@echo "ENVIRONMENT=$(ENVIRONMENT)"
