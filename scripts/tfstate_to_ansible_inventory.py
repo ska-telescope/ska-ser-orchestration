@@ -257,13 +257,19 @@ for state in states["project"]["terraformStates"]["nodes"]:
         }
         for instance_id in instance_group[HOSTS_KEY]:
             instances_with_parent.append(instance_id)
-    total_cluster_inventories = total_cluster_inventories | cluster_inventories
-    total_instance_group_inventories = (
-        total_instance_group_inventories | instance_group_inventories
-    )
-    total_instance_inventories = (
-        total_instance_inventories | instance_inventories
-    )
+    total_cluster_inventories = {
+        **total_cluster_inventories,
+        **cluster_inventories,
+    }
+    total_instance_group_inventories = {
+        **total_instance_group_inventories,
+        **instance_group_inventories,
+    }
+
+    total_instance_inventories = {
+        **total_instance_inventories,
+        **instance_inventories,
+    }
 
 
 # Create inventory
