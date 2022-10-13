@@ -43,7 +43,9 @@ endif
 
 vars:  ## Current variables
 	@echo "Current variable settings:"
+	@echo "DATACENTER=$(DATACENTER)"
 	@echo "ENVIRONMENT=$(ENVIRONMENT)"
+	@echo "SERVICE=$(SERVICE)"
 	@echo "GITLAB_PROJECT_ID=$(GITLAB_PROJECT_ID)"
 	@echo "TF_ROOT_DIR=$(TF_ROOT_DIR)"
 	@echo "TF_INVENTORY_DIR=$(TF_INVENTORY_DIR)"
