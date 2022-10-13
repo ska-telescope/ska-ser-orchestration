@@ -7,6 +7,9 @@ output "cluster" {
       data   = module.elasticsearch_data.instance_group.instances
       kibana = module.kibana.instance_group.instances
     }
+    instances = {
+      loadbalancer = local.elasticsearch.loadbalancer.deploy ? module.loadbalancer[0].instance : null
+    }
   }
 }
 

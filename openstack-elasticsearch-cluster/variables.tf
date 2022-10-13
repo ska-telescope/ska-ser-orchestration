@@ -52,6 +52,7 @@ variable "elasticsearch" {
       docker_volume_size = optional(number)
     }))
     loadbalancer = optional(object({
+      deploy             = optional(bool)
       name               = optional(string)
       flavor             = optional(string)
       image              = optional(string)

@@ -7,7 +7,7 @@ locals {
         module.kibana.inventory
       ]...)
       hosts = merge([
-        module.loadbalancer.inventory
+        local.elasticsearch.loadbalancer.deploy ? module.loadbalancer[0].inventory : null
       ]...)
     }
   }
