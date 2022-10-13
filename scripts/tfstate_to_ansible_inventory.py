@@ -116,6 +116,13 @@ parser.add_argument(
     default=None,
     help="target datacenter",
 )
+parser.add_argument(
+    "-s",
+    dest="service",
+    required=False,
+    default=None,
+    help="target service",
+)
 
 parser.add_argument(
     "--display",
@@ -210,7 +217,12 @@ total_instance_inventories = {}
 for state in states["project"]["terraformStates"]["nodes"]:
     if args.environment is not None:
         if args.datacenter is not None:
-            if not state["name"].startswith(
+            if args.service is not None:
+                if not state["name"].startswith(
+                    f"{args.datacenter}-{args.environment}-{args.service}"
+                ):
+                    continue
+            elif not state["name"].startswith(
                 f"{args.datacenter}-{args.environment}"
             ):
                 continue
