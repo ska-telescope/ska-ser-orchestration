@@ -8,6 +8,7 @@ locals {
 
 module "loadbalancer" {
   source   = "../openstack-instance"
+  count    = local.elasticsearch.loadbalancer.deploy ? 1 : 0
   defaults = var.defaults
   providers = {
     openstack = openstack
