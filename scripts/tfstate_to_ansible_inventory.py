@@ -215,19 +215,9 @@ total_instance_inventories = {}
 
 # iterate over tfstate names to get the actual states
 for state in states["project"]["terraformStates"]["nodes"]:
-    if args.environment is not None:
-        if args.datacenter is not None:
-            if args.service is not None:
-                if not state["name"].startswith(
-                    f"{args.datacenter}-{args.environment}-{args.service}"
-                ):
-                    continue
-            elif not state["name"].startswith(
-                f"{args.datacenter}-{args.environment}"
-            ):
-                continue
-        elif not state["name"].startswith(args.environment):
-            continue
+    prefix = "-".join(list(filter(None, [args.datacenter, args.environment, args.service])))
+    if not state["name"].startswith(prefix):
+        continue
 
     log.info("Getting state from %s/%s", STATE_BASE_URL, state["name"])
     try:
