@@ -20,19 +20,9 @@ output "instance" {
     }
     user            = local.user
     security_groups = local.configuration.security_groups
-    ssh = {
-      keypair = data.openstack_compute_keypair_v2.keypair.name
-      jump_host = {
-        id   = data.openstack_compute_instance_v2.jump_host.id
-        user = local.jump_host_user
-        ip   = data.openstack_networking_floatingip_v2.jump_host_fip.address
-        interfaces = [
-          data.openstack_networking_floatingip_v2.jump_host_fip.address,
-          data.openstack_networking_floatingip_v2.jump_host_fip.fixed_ip
-        ]
-        keypair = data.openstack_compute_instance_v2.jump_host.key_pair
-      }
-    }
+    keypair         = data.openstack_compute_keypair_v2.keypair.name
+    jump_host       = local.jump_host_info
+    ssh_cidr_blocks = local.ssh_cidr_blocks
   }
 }
 

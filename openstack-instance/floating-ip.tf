@@ -1,5 +1,5 @@
 locals {
-  default_fip_network = coalesce(var.defaults.floating_ip_network, "external")
+  default_fip_network = coalesce(var.defaults.floating_ip_network, "External")
   fip_configuration = {
     create  = local.configuration.floating_ip != null ? coalesce(local.configuration.floating_ip.create, false) : false
     network = local.configuration.floating_ip != null ? coalesce(local.configuration.floating_ip.network, local.default_fip_network) : local.default_fip_network

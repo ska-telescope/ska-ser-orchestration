@@ -16,7 +16,6 @@ locals {
       volumes               = local.configuration.volumes
       applications          = local.configuration.applications
       metadata              = local.configuration.metadata
-
     }
   }
 }
