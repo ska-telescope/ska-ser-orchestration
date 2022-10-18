@@ -1,14 +1,15 @@
+.DEFAULT_GOAL := help
+SHELL=/usr/bin/env bash
+
 -include .make/base.mk
 -include .make/python.mk
 -include .make/terraform.mk
--include PrivateRules.mak
-
-SHELL=/usr/bin/env bash
 
 PYTHON_LINT_TARGET=scripts
 
+BASE_PATH?=.
 TF_ROOT_DIR?=.
-TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
+TF_INVENTORY_DIR?= $(TF_ROOT_DIR)
 TF_TARGET?=
 TF_AUTO_APPROVE?=
 TF_ARGUMENTS?=
@@ -18,6 +19,8 @@ SERVICE?=
 GITLAB_PROJECT_ID?=
 
 GENERATE_INVENTORY_ARGS?=
+
+-include $(BASE_PATH)/PrivateRules.mak
 
 ifneq ($(TF_TARGET),)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -target=$(TF_TARGET)
@@ -39,7 +42,15 @@ ifneq ($(SERVICE),)
     GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -s "$(SERVICE)"
 endif
 
--include PrivateRules.mak
+UNTRACKED_INVENTORY_FILES ?=
+ifeq ($(UNTRACKED_INVENTORY_FILES),)
+    UNTRACKED_INVENTORY_FILES := $(shell ls --format=commas $(TF_INVENTORY_DIR)/*.inventory.yml 2> /dev/null)
+endif
+
+EXTRA_SSH_CONFIG_FILES ?=
+ifeq ($(EXTRA_SSH_CONFIG_FILES),)
+    EXTRA_SSH_CONFIG_FILES := $(shell ls --format=commas $(TF_INVENTORY_DIR)/*.ssh.config 2> /dev/null)
+endif
 
 vars:  ## Current variables
 	@echo "DATACENTER=$(DATACENTER)"
@@ -52,6 +63,7 @@ vars:  ## Current variables
 	@echo "TF_HTTP_ADDRESS=$(TF_HTTP_ADDRESS)"
 	@echo "TF_HTTP_LOCK_ADDRESS=$(TF_HTTP_LOCK_ADDRESS)"
 	@echo "TF_HTTP_UNLOCK_ADDRESS=$(TF_HTTP_UNLOCK_ADDRESS)"
+	@echo "GENERATE_INVENTORY_ARGS=$(GENERATE_INVENTORY_ARGS)"
 
 lint: ## Lint terraform and python code
 	@echo "Linting Terraform Code"
@@ -88,6 +100,7 @@ plan-destroy: ## Check changes to the cluster in destroy phase. Filter with TF_T
 refresh: ## Update the state on the backend. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
+<<<<<<< HEAD
 generate-inventory:
 	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS)
 
@@ -101,3 +114,11 @@ help: ## Show Help
 	@echo ""
 	@echo "Targets:"
 	@$(MAKE) print_targets;
+=======
+generate-inventory: ## Generate inventory based on tracked and non tracked infrastructure
+	@scripts/tfstate_to_ansible_inventory.py \
+		-e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS) \
+		-u "$(UNTRACKED_INVENTORY_FILES)" \
+		-c "$(EXTRA_SSH_CONFIG_FILES)" \
+		-o $(TF_INVENTORY_DIR)
+>>>>>>> 3ab8469 (ST-1349: Allow untracked infrastructure to be integrated into the inventory)

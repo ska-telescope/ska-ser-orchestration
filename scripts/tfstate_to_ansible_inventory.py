@@ -4,10 +4,12 @@ an ansible-inventory file, in YAML format.
 """
 
 import base64
+import copy
 import json
 import logging
 import os
 import pathlib
+import re
 import sys
 from argparse import ArgumentParser
 
@@ -92,6 +94,49 @@ Host {host_name}
 """
 
 
+def merge(source, destination):
+    """
+    Merges dictionaries
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            merge(value, node)
+        else:
+            destination[key] = value
+
+    return destination
+
+
+def remove(data, prefix=None, suffix=None):
+    """
+    Removes both/or prefix and suffix from string
+    """
+    if prefix is not None and data.startswith(prefix):
+        mark = len(prefix)  # necessary to overcome format vs lint errors
+        data = data[mark:]
+    if suffix is not None and data.endswith(suffix):
+        mark = -len(suffix)  # necessary to overcome format vs lint errors
+        data = data[:mark]
+
+    return data
+
+
+def envsubst(data):
+    """
+    Replaces environment variables within a string
+    """
+    matches = re.findall(r"(\${[a-zA-Z0-9_-]+})+", data) + re.findall(
+        r"(\$[a-zA-Z0-9_-]+)+", data
+    )
+    for match in matches:
+        variable = remove(remove(match, prefix="${", suffix="}"), prefix="$")
+        data = data.replace(match, os.environ.get(variable, match))
+
+    return data
+
+
 parser = ArgumentParser(
     description="Terraform State to Ansible Inventory Conversion Tool"
 )
@@ -123,7 +168,20 @@ parser.add_argument(
     default=None,
     help="target service",
 )
-
+parser.add_argument(
+    "-u",
+    dest="untracked_inventories",
+    required=False,
+    default=None,
+    help="untracked inventory files",
+)
+parser.add_argument(
+    "-c",
+    dest="ssh_configurations",
+    required=False,
+    default=None,
+    help="extra ssh configuration files",
+)
 parser.add_argument(
     "--display",
     default=False,
@@ -317,10 +375,24 @@ inventory = {
     },
 }
 
+# Parse untracked inventories
+untracked_inventory = {}
+if args.untracked_inventories is not None:
+    for untracked_inventory_path in args.untracked_inventories.split(","):
+        with open(
+            untracked_inventory_path.strip(), "r", encoding="utf-8"
+        ) as f:
+            log.info(
+                "Loading untracked inventory from %s", untracked_inventory_path
+            )
+            untracked_inventory = merge(
+                copy.deepcopy(untracked_inventory), yaml.safe_load(f)
+            )
+
 # Output inventory
 inventory_path = os.path.join(output, "inventory.yml")
 with open(inventory_path, "w+", encoding="utf-8") as f:
-    yaml.safe_dump(inventory, indent=2, stream=f)
+    yaml.safe_dump(merge(untracked_inventory, inventory), indent=2, stream=f)
     log.info("Inventory at %s", inventory_path)
 
 # Create ssh config
@@ -354,4 +426,9 @@ for (host, config) in jump_hosts.items():
 ssh_config_path = os.path.join(output, "ssh.config")
 with open(ssh_config_path, "w+", encoding="utf-8") as f:
     f.write("\n".join(ssh_config))
+    if args.ssh_configurations is not None:
+        for ssh_configuration in args.ssh_configurations.split(","):
+            with open(ssh_configuration.strip(), "r", encoding="utf-8") as fc:
+                log.info("Loading ssh.config from %s", ssh_configuration)
+                f.write("\n\n" + envsubst(fc.read()))
     log.info("SSH Config at %s", ssh_config_path)
