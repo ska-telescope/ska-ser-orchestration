@@ -1,11 +1,11 @@
 locals {
   jump_host_cidr_blocks = {
-    for ip in compact([local.jump_host_fixed_ip, local.jump_host_floating_ip]) :
+    for ip in local.jump_host_addresses :
     "${ip}/32" => "Jump-host access from ${ip}"
   }
 
   vpn_cidr_blocks = {
-    for cidr_block in coalesce(var.defaults.vpn_cidr_blocks, []) :
+    for cidr_block in distinct(compact(coalesce(var.defaults.vpn_cidr_blocks, []))) :
     (cidr_block) => "VPN access from ${cidr_block}"
   }
 

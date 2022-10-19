@@ -1,6 +1,5 @@
 locals {
-  user           = "ubuntu" # TODO: Get from image metadata
-  jump_host_user = "ubuntu" # TODO: Get from instance metadata
+  user = "ubuntu" # TODO: Get from image metadata
 }
 
 resource "openstack_compute_instance_v2" "instance" {

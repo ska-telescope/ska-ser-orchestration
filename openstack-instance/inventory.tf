@@ -7,7 +7,7 @@ locals {
       ip                         = openstack_compute_instance_v2.instance.access_ip_v4
       floating_ip                = local.floating_ip
       keypair                    = data.openstack_compute_keypair_v2.keypair.name
-      jump_host                  = local.jump_host_info
+      jump_host                  = local.jump_host
       volumes = [
         for volume in openstack_blockstorage_volume_v3.volume :
         {

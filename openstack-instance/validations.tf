@@ -1,5 +1,7 @@
 locals {
-  az = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
+  az                  = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
+  jump_host           = length(keys(data.external.jump_host.result)) > 0 ? data.external.jump_host.result : null
+  jump_host_addresses = local.jump_host != null ? split(",", data.external.jump_host.result.addresses) : []
 }
 
 data "openstack_compute_flavor_v2" "flavor" {
@@ -20,4 +22,11 @@ data "openstack_networking_network_v2" "network" {
 
 data "openstack_compute_keypair_v2" "keypair" {
   name = local.configuration.keypair
+}
+
+data "external" "jump_host" {
+  program = [var.python, "${path.module}/scripts/get_instance_by_id.py"]
+  query = {
+    id = local.configuration.jump_host
+  }
 }
