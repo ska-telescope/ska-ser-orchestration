@@ -169,6 +169,7 @@ export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
 export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate"
 export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate/lock"
 export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-tfstate/lock"
+export OS_CLOUD=engage # if you changed cloud name in terraform.tfvars, change it here as well
 terraform init --upgrade
 terraform apply
 ```
@@ -221,6 +222,7 @@ export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
 export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate"
 export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate/lock"
 export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-instance-group-tfstate/lock"
+export OS_CLOUD=engage # if you changed cloud name in terraform.tfvars, change it here as well
 terraform init --upgrade
 terraform apply
 ```
@@ -306,6 +308,7 @@ export TF_HTTP_PASSWORD="<gitlab user access token with api access>"
 export TF_HTTP_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate"
 export TF_HTTP_LOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate/lock"
 export TF_HTTP_UNLOCK_ADDRESS="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/terraform/state/${TF_HTTP_USERNAME}-elasticsearch-tfstate/lock"
+export OS_CLOUD=engage # if you changed cloud name in terraform.tfvars, change it here as well
 terraform init --upgrade
 terraform apply
 ```
@@ -362,6 +365,17 @@ To cleanup, do:
 terraform destroy
 curl --header "Private-Token: $TF_HTTP_PASSWORD" --request DELETE "$TF_HTTP_ADDRESS"
 ```
+
+## Instance SSH access configuration
+
+For security reasons, we should not have the SSH port (22) opened to the public, regardless of having a secure access through PKI. Currently we can configure an instance's access using two settings:
+
+* **jump_host** - Jump host instance in OpenStack
+* **vpn_cidr_blocks** - List of cidr blocks that are allowed
+
+The setup really depends on what one wants to accomplish and the underlying network structure. If we want to force all access to go through a jump host (funnels traffic, has pros and cons), we should just set **jump_host** because that automatically checks for all instance's addresses. In the case jump host is not an OpenStack instance, we can set it CIDR block via **vpn_cidr_blocks**.
+
+When allowing VPN access, we should set the VPN's CIDR blocks in via **vpn_cidr_blocks**. In some cases (e.g, STFC) the VPN is configured in a way that the traffic appears as coming from the VPN Gateway, not the client. In that case, it is possible to set the **jump_host** as the gateway's IP, or set it via **vpn_cidr_blocks**.
 
 ## References
 

@@ -4,6 +4,9 @@ Script to get a information about an instance, including the name
 and all associated network addresses. This script is required because
 the Terraform OpenStack providerdoes not support this functionality.
 
+Overrides:
+OS_CLOUD environment variable to change target cloud is clouds.yaml
+
 Input example:
 {
     "id": "01a68010-cc61-4396-9690-cb7263d2412d"
@@ -22,6 +25,7 @@ Output example:
 """
 
 import json
+import os
 import sys
 
 import openstack
@@ -41,7 +45,7 @@ instance_id = input_json.get("id", None)
 if instance_id is None:
     output_and_exit(None)
 
-cloud = openstack.connect(cloud="openstack")
+cloud = openstack.connect(cloud=os.environ.get("OS_CLOUD", "openstack"))
 
 # Get instance by id
 server = cloud.get_server(name_or_id=instance_id, detailed=True)
