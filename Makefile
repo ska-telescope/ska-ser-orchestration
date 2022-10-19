@@ -9,7 +9,7 @@ PYTHON_LINT_TARGET=scripts
 
 BASE_PATH?=.
 TF_ROOT_DIR?=.
-TF_INVENTORY_DIR?= $(TF_ROOT_DIR)
+TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory
 TF_TARGET?=
 TF_AUTO_APPROVE?=
 TF_ARGUMENTS?=
@@ -116,7 +116,7 @@ help: ## Show Help
 	@$(MAKE) print_targets;
 =======
 generate-inventory: ## Generate inventory based on tracked and non tracked infrastructure
-	@scripts/tfstate_to_ansible_inventory.py \
+	@scripts/generate_ansible_inventory.py \
 		-e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS) \
 		-u "$(UNTRACKED_INVENTORY_FILES)" \
 		-c "$(EXTRA_SSH_CONFIG_FILES)" \
