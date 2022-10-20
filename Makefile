@@ -42,7 +42,6 @@ endif
 -include PrivateRules.mak
 
 vars:  ## Current variables
-	@echo "Current variable settings:"
 	@echo "DATACENTER=$(DATACENTER)"
 	@echo "ENVIRONMENT=$(ENVIRONMENT)"
 	@echo "SERVICE=$(SERVICE)"
@@ -50,6 +49,9 @@ vars:  ## Current variables
 	@echo "TF_ROOT_DIR=$(TF_ROOT_DIR)"
 	@echo "TF_INVENTORY_DIR=$(TF_INVENTORY_DIR)"
 	@echo "TF_TARGET=$(TF_TARGET)"
+	@echo "TF_HTTP_ADDRESS=$(TF_HTTP_ADDRESS)"
+	@echo "TF_HTTP_LOCK_ADDRESS=$(TF_HTTP_LOCK_ADDRESS)"
+	@echo "TF_HTTP_UNLOCK_ADDRESS=$(TF_HTTP_UNLOCK_ADDRESS)"
 
 lint: ## Lint terraform and python code
 	@echo "Linting Terraform Code"
@@ -89,3 +91,13 @@ refresh: ## Update the state on the backend. Filter with TF_TARGET
 generate-inventory:
 	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS)
 
+print_targets:
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
+
+help: ## Show Help
+	@echo ""
+	@echo "Vars:"
+	@$(MAKE) vars;
+	@echo ""
+	@echo "Targets:"
+	@$(MAKE) print_targets;
