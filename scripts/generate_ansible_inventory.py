@@ -379,6 +379,9 @@ inventory = {
 untracked_inventory = {}
 if args.untracked_inventories is not None:
     for untracked_inventory_path in args.untracked_inventories.split(","):
+        if not os.path.exists(untracked_inventory_path):
+            continue
+
         with open(
             untracked_inventory_path.strip(), "r", encoding="utf-8"
         ) as f:
@@ -428,6 +431,9 @@ with open(ssh_config_path, "w+", encoding="utf-8") as f:
     f.write("\n".join(ssh_config))
     if args.ssh_configurations is not None:
         for ssh_configuration in args.ssh_configurations.split(","):
+            if not os.path.exists(ssh_configuration):
+                continue
+
             with open(ssh_configuration.strip(), "r", encoding="utf-8") as fc:
                 log.info("Loading ssh.config from %s", ssh_configuration)
                 f.write("\n\n" + envsubst(fc.read()))

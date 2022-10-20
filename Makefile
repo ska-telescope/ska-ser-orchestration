@@ -56,8 +56,13 @@ vars:  ## Current variables
 	@echo "DATACENTER=$(DATACENTER)"
 	@echo "ENVIRONMENT=$(ENVIRONMENT)"
 	@echo "SERVICE=$(SERVICE)"
+	@echo "BASE_PATH=$(BASE_PATH)"
+	@echo "TF_HTTP_USERNAME=$(TF_HTTP_USERNAME)"
 	@echo "GITLAB_PROJECT_ID=$(GITLAB_PROJECT_ID)"
 	@echo "TF_ROOT_DIR=$(TF_ROOT_DIR)"
+	@echo "TF_HTTP_ADDRESS=$(TF_HTTP_ADDRESS)"
+	@echo "TF_HTTP_LOCK_ADDRESS=$(TF_HTTP_LOCK_ADDRESS)"
+	@echo "TF_HTTP_UNLOCK_ADDRESS=$(TF_HTTP_UNLOCK_ADDRESS)"
 	@echo "TF_INVENTORY_DIR=$(TF_INVENTORY_DIR)"
 	@echo "TF_TARGET=$(TF_TARGET)"
 	@echo "TF_HTTP_ADDRESS=$(TF_HTTP_ADDRESS)"
@@ -100,9 +105,12 @@ plan-destroy: ## Check changes to the cluster in destroy phase. Filter with TF_T
 refresh: ## Update the state on the backend. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
-<<<<<<< HEAD
-generate-inventory:
-	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS)
+generate-inventory: ## Generate inventory based on tracked and non tracked infrastructure
+	@scripts/generate_ansible_inventory.py \
+		-e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS) \
+		-u "$(UNTRACKED_INVENTORY_FILES)" \
+		-c "$(EXTRA_SSH_CONFIG_FILES)" \
+		-o $(TF_INVENTORY_DIR)
 
 print_targets:
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
@@ -114,11 +122,4 @@ help: ## Show Help
 	@echo ""
 	@echo "Targets:"
 	@$(MAKE) print_targets;
-=======
-generate-inventory: ## Generate inventory based on tracked and non tracked infrastructure
-	@scripts/generate_ansible_inventory.py \
-		-e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS) \
-		-u "$(UNTRACKED_INVENTORY_FILES)" \
-		-c "$(EXTRA_SSH_CONFIG_FILES)" \
-		-o $(TF_INVENTORY_DIR)
->>>>>>> 3ab8469 (ST-1349: Allow untracked infrastructure to be integrated into the inventory)
+
