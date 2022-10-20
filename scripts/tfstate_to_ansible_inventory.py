@@ -111,10 +111,10 @@ parser.add_argument(
 )
 parser.add_argument(
     "-d",
-    dest="datacenter",
+    dest="datacentre",
     required=False,
     default=None,
-    help="target datacenter",
+    help="target datacentre",
 )
 parser.add_argument(
     "-s",
@@ -216,7 +216,7 @@ total_instance_inventories = {}
 # iterate over tfstate names to get the actual states
 for state in states["project"]["terraformStates"]["nodes"]:
     PREFIX = "-".join(
-        list(filter(None, [args.datacenter, args.environment, args.service]))
+        list(filter(None, [args.datacentre, args.environment, args.service]))
     )
     if not state["name"].startswith(PREFIX):
         continue
