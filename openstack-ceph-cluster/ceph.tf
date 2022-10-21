@@ -1,6 +1,6 @@
-#locals {
-#  ceph_node_applications = ["", ""]
-#}
+locals {
+  ceph_node_applications = ["ceph"]
+}
 
 module "ceph_master" {
   source   = "../openstack-instance-group"
@@ -31,7 +31,7 @@ module "ceph_master" {
         mount_point = "/var/wal"
       },
     ]
-    #applications = local.ceph_node_applications
+    applications = local.ceph_node_applications
   }
 }
 
