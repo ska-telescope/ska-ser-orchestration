@@ -4,7 +4,7 @@ output "cluster" {
     name = local.ceph.name
     instance_groups = {
       master = module.ceph_master.instance_group.instances
-      worker   = module.ceph_worker.instance_group.instances
+      worker = module.ceph_worker.instance_group.instances
     }
   }
 }
