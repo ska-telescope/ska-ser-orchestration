@@ -10,7 +10,7 @@ locals {
     worker = {
       name             = "worker"
       size             = 0
-      data_volume_size = 250
+      data_volume_size = 20
       wal_volume_size  = 20
     }
 
