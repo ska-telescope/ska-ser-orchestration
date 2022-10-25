@@ -10,6 +10,7 @@ locals {
     thanos                = local.thanos_rules
     haproxy               = local.haproxy_rules
     haproxy_elasticsearch = local.haproxy_elasticsearch_rules
+    ceph                  = local.ceph_rules
   }
 
   application_ruleset = flatten([
