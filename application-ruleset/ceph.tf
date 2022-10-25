@@ -1,7 +1,7 @@
 locals {
   ceph_rules = {
     ceph_ingress = {
-      service   = "ceph"
+      service   = "ssh"
       direction = "ingress"
       protocol  = "tcp"
       ports     = [22]

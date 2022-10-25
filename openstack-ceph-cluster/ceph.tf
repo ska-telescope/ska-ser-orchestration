@@ -23,12 +23,12 @@ module "ceph_master" {
       {
         name        = "data"
         size        = local.ceph.master.data_volume_size
-        mount_point = "/var/data"
+        mount_point = ""
       },
       {
         name        = "wal"
         size        = local.ceph.master.wal_volume_size
-        mount_point = "/var/wal"
+        mount_point = ""
       },
     ]
     applications = local.ceph_node_applications
@@ -56,12 +56,12 @@ module "ceph_worker" {
       {
         name        = "data"
         size        = local.ceph.worker.data_volume_size
-        mount_point = "/var/data"
+        mount_point = ""
       },
       {
         name        = "wal"
         size        = local.ceph.worker.wal_volume_size
-        mount_point = "/var/wal"
+        mount_point = ""
       },
     ]
     #applications = local.ceph_node_applications
