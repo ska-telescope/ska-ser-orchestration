@@ -1,6 +1,7 @@
 locals {
-  az            = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
-  jump_host_fip = data.openstack_compute_instance_v2.jump_host.access_ip_v4
+  az                  = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
+  jump_host           = length(keys(data.external.jump_host.result)) > 0 ? data.external.jump_host.result : null
+  jump_host_addresses = local.jump_host != null ? split(",", data.external.jump_host.result.addresses) : []
 }
 
 data "openstack_compute_flavor_v2" "flavor" {
@@ -23,13 +24,9 @@ data "openstack_compute_keypair_v2" "keypair" {
   name = local.configuration.keypair
 }
 
-data "openstack_compute_instance_v2" "jump_host" {
-  id = local.configuration.jump_host
+data "external" "jump_host" {
+  program = [var.python, "${path.module}/scripts/get_instance_by_id.py"]
+  query = {
+    id = local.configuration.jump_host
+  }
 }
-
-# Workaround to fail if jump_host (id) is not valid, as the data source does not
-# throw an error if it does not exist
-data "openstack_networking_floatingip_v2" "jump_host_fip" {
-  fixed_ip = local.jump_host_fip != null ? local.jump_host_fip : "jump-host-not-found"
-}
-

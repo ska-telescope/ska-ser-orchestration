@@ -26,5 +26,8 @@ module "elasticsearch" {
       data_volume_size = 20
     }
     kibana = {}
+    loadbalancer = {
+      deploy = false
+    }
   }
 }

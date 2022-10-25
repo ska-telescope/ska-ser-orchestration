@@ -5,7 +5,7 @@
 
 SHELL=/usr/bin/env bash
 
-PYTHON_LINT_TARGET=scripts
+PYTHON_LINT_TARGET=scripts openstack-instance/scripts
 
 TF_ROOT_DIR?=.
 TF_INVENTORY_DIR?= $(TF_ROOT_DIR)/inventory

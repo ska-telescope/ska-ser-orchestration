@@ -123,7 +123,12 @@ parser.add_argument(
     default=None,
     help="target service",
 )
-
+parser.add_argument(
+    "--no-jumphost",
+    default=False,
+    action="store_true",
+    help="disable jumphost (connection through VPN)",
+)
 parser.add_argument(
     "--display",
     default=False,
@@ -131,6 +136,10 @@ parser.add_argument(
     help="set to output the generated inventory",
 )
 args = parser.parse_args()
+if args.no_jumphost:
+    log.info("** ---------- Jumphost DISABLED ---------- **")
+    log.info("** Make sure you connect to a suitable VPN **")
+    log.info("** ---------- Jumphost DISABLED ---------- **")
 
 # Create output directory
 output = os.path.abspath(args.output)
@@ -221,7 +230,7 @@ for state in states["project"]["terraformStates"]["nodes"]:
     if not state["name"].startswith(PREFIX):
         continue
 
-    log.info("Getting state from %s/%s", STATE_BASE_URL, state["name"])
+    log.info("Getting state from %s%s", STATE_BASE_URL, state["name"])
     try:
         tf_state_request = requests.get(
             STATE_BASE_URL + state["name"],
@@ -229,14 +238,18 @@ for state in states["project"]["terraformStates"]["nodes"]:
             timeout=60,
         )
         if tf_state_request.status_code != 200:
+            if tf_state_request.status_code == 204:
+                # no content
+                continue
+
             log.critical(
                 "** ERROR [%s]:\n%s",
                 tf_state_request.status_code,
-                tf_state_request.content(),
+                tf_state_request.content.decode("utf-8"),
             )
             sys.exit(tf_state_request.status_code)
     except requests.exceptions.RequestException as err:
-        log.critical("** error getting tfstate[%s]: %s", state["name"], err)
+        log.critical("** ERROR [%s] getting tfstate: %s", state["name"], err)
         sys.exit(-1)
 
     tf_state = tf_state_request.json().get("resources", [])
@@ -336,7 +349,9 @@ for (instance_id, instance) in total_instance_inventories.items():
             user=instance["ansible_user"],
             host_ip=instance["ip"],
             keypair=instance["keypair"],
-            jump_host=instance["jump_host"]["hostname"],
+            jump_host=None
+            if args.no_jumphost
+            else instance["jump_host"]["hostname"],
         )
     )
 
