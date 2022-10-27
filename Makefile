@@ -1,7 +1,7 @@
 -include .make/base.mk
 -include .make/python.mk
 -include .make/terraform.mk
--include PrivateRules.mak
+-include $(BASE_PATH)/PrivateRules.mak
 
 SHELL=/usr/bin/env bash
 
@@ -27,19 +27,22 @@ ifeq ($(TF_AUTO_APPROVE),true)
     TF_ARGUMENTS := $(TF_ARGUMENTS) -auto-approve
 endif
 
-ifdef PLAYBOOKS_ROOT_DIR
-TF_INVENTORY_DIR="$(PLAYBOOKS_ROOT_DIR)"
+ifneq ($(DATACENTRE),)
+    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -d $(DATACENTRE)
 endif
 
-ifneq ($(DATACENTRE),)
-    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -d "$(DATACENTRE)"
+ifneq ($(ENVIRONMENT),)
+    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -e $(ENVIRONMENT)
 endif
 
 ifneq ($(SERVICE),)
-    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -s "$(SERVICE)"
+    GENERATE_INVENTORY_ARGS := $(GENERATE_INVENTORY_ARGS) -s $(SERVICE)
 endif
 
--include PrivateRules.mak
+check-service:
+ifndef SERVICE
+	$(error SERVICE is undefined)
+endif
 
 vars:  ## Current variables
 	@echo "DATACENTRE=$(DATACENTRE)"
@@ -73,23 +76,23 @@ clean: ## Removes terraform module and state caches. Requires init to be execute
 
 re-init: clean init
 
-apply: ## Apply changes to the cluster. Filter with TF_TARGET
+apply: check-service## Apply changes to the cluster. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) apply $(TF_ARGUMENTS)
 
-plan: ## Check changes to the cluster. Filter with TF_TARGET
+plan: check-service ## Check changes to the cluster. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) plan $(TF_ARGUMENTS)
 
-destroy: ## Destroy cluster. Filter with TF_TARGET
+destroy: check-service ## Destroy cluster. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) destroy $(TF_ARGUMENTS)
 
-plan-destroy: ## Check changes to the cluster in destroy phase. Filter with TF_TARGET
+plan-destroy: check-service ## Check changes to the cluster in destroy phase. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) plan -destroy $(TF_ARGUMENTS)
 
-refresh: ## Update the state on the backend. Filter with TF_TARGET
+refresh: check-service ## Update the state on the backend. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) refresh $(TF_ARGUMENTS)
 
 generate-inventory:
-	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) -e "$(ENVIRONMENT)" $(GENERATE_INVENTORY_ARGS)
+	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) $(GENERATE_INVENTORY_ARGS)
 
 print_targets:
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ": .*?## "}; {p=index($$1,":")} {printf "\033[36m%-30s\033[0m %s\n", substr($$1,p+1), $$2}';
