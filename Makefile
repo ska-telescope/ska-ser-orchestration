@@ -68,15 +68,15 @@ format: ## Format terraform and python code
 	@echo "Formatting Python Code"
 	@make python-format
 
-init: ## Initiate Terraform on the local environment
+init: check-service ## Initiate Terraform on the local environment
 	@terraform -chdir=$(TF_ROOT_DIR) init --upgrade $(TF_ARGUMENTS)
 
-clean: ## Removes terraform module and state caches. Requires init to be executed
+clean:  check-service ## Removes terraform module and state caches. Requires init to be executed
 	@rm -rf $$(find $(TF_ROOT_DIR) -name ".terraform*" | xargs)
 
 re-init: clean init
 
-apply: check-service## Apply changes to the cluster. Filter with TF_TARGET
+apply: check-service ## Apply changes to the cluster. Filter with TF_TARGET
 	@terraform -chdir=$(TF_ROOT_DIR) apply $(TF_ARGUMENTS)
 
 plan: check-service ## Check changes to the cluster. Filter with TF_TARGET
