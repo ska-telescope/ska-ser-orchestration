@@ -36,7 +36,7 @@ def output_and_exit(data):
     Prints the output for the external data source and exits
     with success
     """
-    print(json.dumps(data))
+    print(json.dumps(data, sort_keys=True))
     sys.exit(0)
 
 
@@ -66,6 +66,6 @@ output_and_exit(
         "ip": server["private_v4"],
         "floating_ip": server.get("public_v4", None),
         "keypair": server["key_name"],
-        "addresses": ",".join(list(set(addresses))),
+        "addresses": ",".join(sorted(list(set(addresses)))),
     }
 )
