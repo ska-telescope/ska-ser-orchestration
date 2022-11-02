@@ -58,7 +58,7 @@ vars:  ## Current variables
 
 lint: ## Lint terraform and python code
 	@echo "Linting Terraform Code"
-	@make terraform-lint
+	@make tf-lint
 	@echo "Linting Python Code"
 	@make python-lint
 
