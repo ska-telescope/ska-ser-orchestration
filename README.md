@@ -31,6 +31,9 @@ The modules used to create instances enforce the creation of a separate security
 * **thanos**
   * querier: 9091
   * frontend: 9095
+* **nexus**
+  * http: 8081
+  * docker: 9080-9084
 
 # Make Targets
 
