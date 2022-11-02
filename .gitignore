@@ -7,3 +7,4 @@ inventory.yml
 requirements.txt
 ssh.config
 PrivateRules.mak
+**/clouds.yaml
