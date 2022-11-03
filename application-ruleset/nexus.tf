@@ -1,12 +1,5 @@
 locals {
   nexus_rules = {
-    nexus_ssh_ingress = {
-      service   = "nexus_ssh_ingress"
-      direction = "ingress"
-      protocol  = "tcp"
-      ports     = [22]
-      target    = "network"
-    },
     nexus_http_ingress = {
       service   = "nexus_http_ingress"
       direction = "ingress"
