@@ -11,6 +11,7 @@ locals {
     haproxy               = local.haproxy_rules
     haproxy_elasticsearch = local.haproxy_elasticsearch_rules
     ceph                  = local.ceph_rules
+    nexus                 = local.nexus_rules
   }
 
   application_ruleset = flatten([
