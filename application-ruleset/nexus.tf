@@ -12,7 +12,7 @@ locals {
       direction = "ingress"
       protocol  = "tcp"
       ports     = [9080, 9081, 9082, 9083, 9084]
-      target    = "network"
+      target    = "public"
     }
   }
 }
