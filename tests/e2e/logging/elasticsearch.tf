@@ -18,7 +18,7 @@ module "elasticsearch" {
       docker_volume_size = 10
     }
     kibana = {
-      size               = 0
+      size               = 1
       docker_volume_size = 10
     }
     loadbalancer = {

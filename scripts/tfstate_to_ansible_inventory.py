@@ -103,6 +103,13 @@ parser.add_argument(
     help="output directory",
 )
 parser.add_argument(
+    "-i",
+    dest="local_state",
+    required=False,
+    default=None,
+    help="local state file",
+)
+parser.add_argument(
     "-e",
     dest="environment",
     required=False,
@@ -145,74 +152,87 @@ if args.no_jumphost:
 output = os.path.abspath(args.output)
 pathlib.Path(output).mkdir(parents=True, exist_ok=True)
 
-# Get state using HTTP
-url = get_env(["TF_STATE_ADDRESS", "TF_HTTP_ADDRESS"])
-username = get_env(["TF_STATE_USERNAME", "TF_HTTP_USERNAME"])
-password = get_env(["TF_STATE_PASSWORD", "TF_HTTP_PASSWORD"])
+if args.local_state is None:
+    # Get state using HTTP
+    url = get_env(["TF_STATE_ADDRESS", "TF_HTTP_ADDRESS"])
+    username = get_env(["TF_STATE_USERNAME", "TF_HTTP_USERNAME"])
+    password = get_env(["TF_STATE_PASSWORD", "TF_HTTP_PASSWORD"])
 
-# TO DO: switch to using full path name instead of project id
-project_id = get_env(["GITLAB_PROJECT_ID", "TF_HTTP_PASSWORD"])
-STATE_BASE_URL = (
-    f"https://gitlab.com/api/v4/projects/{project_id}/terraform/state/"
-)
-
-# common headers for API calls
-headers = {
-    "Content-type": "application/json",
-    "Accept": "*/*",
-    "PRIVATE-TOKEN": password,
-    "Authorization": f"Bearer {password}",
-}
-
-# get the full path name for the project id
-api_query = f"https://gitlab.com/api/v4/projects/{project_id}/"
-log.debug("Project URI: %s", api_query)
-try:
-    project_request = requests.get(api_query, headers=headers, timeout=60)
-    if project_request.status_code != 200:
-        content = json.dumps(project_request.json(), indent=4)
-        log.critical(
-            "** ERROR get project [%s]:\n%s",
-            project_request.status_code,
-            content,
-        )
-        sys.exit(project_request.status_code)
-except requests.exceptions.RequestException as err:
-    log.critical("** error getting project path_with_namespace: %s", err)
-    sys.exit(-1)
-
-# get list of tfstates using graphql API
-# select by path: project(fullPath:
-#                 "ska-telescope/sdi/ska-ser-infra-machinery")
-try:
-    path_with_namespace = project_request.json().get("path_with_namespace", "")
-    log.debug(
-        "Project path_with_namespace %s:%s", project_id, path_with_namespace
+    # TO DO: switch to using full path name instead of project id
+    project_id = get_env(["GITLAB_PROJECT_ID", "TF_HTTP_PASSWORD"])
+    STATE_BASE_URL = (
+        f"https://gitlab.com/api/v4/projects/{project_id}/terraform/state/"
     )
-    gql_query = {
-        "query": (
-            "query { project("
-            f'fullPath: "{path_with_namespace}") '
-            " { name id terraformStates { nodes {name}}}}"
-        )
+
+    # common headers for API calls
+    headers = {
+        "Content-type": "application/json",
+        "Accept": "*/*",
+        "PRIVATE-TOKEN": password,
+        "Authorization": f"Bearer {password}",
     }
 
-    tf_all_states_request = requests.post(
-        GRAPHQL_URL, json=gql_query, headers=headers, timeout=60
-    )
-    if tf_all_states_request.status_code != 200:
-        log.critical(
-            "** ERROR get tfstates [%s]:\n%s",
-            tf_all_states_request.status_code,
-            tf_all_states_request.content(),
-        )
-        sys.exit(tf_all_states_request.status_code)
-except requests.exceptions.RequestException as err:
-    log.critical("** error getting tfstates: %s", err)
-    sys.exit(-1)
+    # get the full path name for the project id
+    api_query = f"https://gitlab.com/api/v4/projects/{project_id}/"
+    log.debug("Project URI: %s", api_query)
+    try:
+        project_request = requests.get(api_query, headers=headers, timeout=60)
+        if project_request.status_code != 200:
+            content = json.dumps(project_request.json(), indent=4)
+            log.critical(
+                "** ERROR get project [%s]:\n%s",
+                project_request.status_code,
+                content,
+            )
+            sys.exit(project_request.status_code)
+    except requests.exceptions.RequestException as err:
+        log.critical("** error getting project path_with_namespace: %s", err)
+        sys.exit(-1)
 
-# extract the tfstates
-states = tf_all_states_request.json().get("data", {})
+    # get list of tfstates using graphql API
+    # select by path: project(fullPath:
+    #                 "ska-telescope/sdi/ska-ser-infra-machinery")
+    try:
+        path_with_namespace = project_request.json().get(
+            "path_with_namespace", ""
+        )
+        log.debug(
+            "Project path_with_namespace %s:%s",
+            project_id,
+            path_with_namespace,
+        )
+        gql_query = {
+            "query": (
+                "query { project("
+                f'fullPath: "{path_with_namespace}") '
+                " { name id terraformStates { nodes {name}}}}"
+            )
+        }
+
+        tf_all_states_request = requests.post(
+            GRAPHQL_URL, json=gql_query, headers=headers, timeout=60
+        )
+        if tf_all_states_request.status_code != 200:
+            log.critical(
+                "** ERROR get tfstates [%s]:\n%s",
+                tf_all_states_request.status_code,
+                tf_all_states_request.content(),
+            )
+            sys.exit(tf_all_states_request.status_code)
+    except requests.exceptions.RequestException as err:
+        log.critical("** error getting tfstates: %s", err)
+        sys.exit(-1)
+
+    # extract the tfstates
+    states = tf_all_states_request.json().get("data", {})
+else:
+    states = {
+        "project": {
+            "terraformStates": {
+                "nodes": ["local"],
+            }
+        }
+    }
 
 # Parse groupings
 instance_groups = {}
@@ -224,35 +244,45 @@ total_instance_inventories = {}
 
 # iterate over tfstate names to get the actual states
 for state in states["project"]["terraformStates"]["nodes"]:
-    PREFIX = "-".join(
-        list(filter(None, [args.datacentre, args.environment, args.service]))
-    )
-    if not state["name"].startswith(PREFIX):
-        continue
-
-    log.info("Getting state from %s%s", STATE_BASE_URL, state["name"])
-    try:
-        tf_state_request = requests.get(
-            STATE_BASE_URL + state["name"],
-            auth=(username, password),
-            timeout=60,
-        )
-        if tf_state_request.status_code != 200:
-            if tf_state_request.status_code == 204:
-                # no content
-                continue
-
-            log.critical(
-                "** ERROR [%s]:\n%s",
-                tf_state_request.status_code,
-                tf_state_request.content.decode("utf-8"),
+    if state != "local":
+        PREFIX = "-".join(
+            list(
+                filter(None, [args.datacentre, args.environment, args.service])
             )
-            sys.exit(tf_state_request.status_code)
-    except requests.exceptions.RequestException as err:
-        log.critical("** ERROR [%s] getting tfstate: %s", state["name"], err)
-        sys.exit(-1)
+        )
+        if not state["name"].startswith(PREFIX):
+            continue
 
-    tf_state = tf_state_request.json().get("resources", [])
+        log.info("Getting state from %s%s", STATE_BASE_URL, state["name"])
+        try:
+            tf_state_request = requests.get(
+                STATE_BASE_URL + state["name"],
+                auth=(username, password),
+                timeout=60,
+            )
+            if tf_state_request.status_code != 200:
+                if tf_state_request.status_code == 204:
+                    # no content
+                    continue
+
+                log.critical(
+                    "** ERROR [%s]:\n%s",
+                    tf_state_request.status_code,
+                    tf_state_request.content.decode("utf-8"),
+                )
+                sys.exit(tf_state_request.status_code)
+        except requests.exceptions.RequestException as err:
+            log.critical(
+                "** ERROR [%s] getting tfstate: %s", state["name"], err
+            )
+            sys.exit(-1)
+
+        tf_state = tf_state_request.json().get("resources", [])
+
+    else:
+        with open(args.local_state, encoding="utf-8") as f:
+            tf_state_json: dict = json.load(f)
+            tf_state = tf_state_json.get("resources", [])
 
     # Get class inventories
     cluster_inventories = get_inventory(tf_state, "cluster")
