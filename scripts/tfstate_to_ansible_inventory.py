@@ -137,6 +137,12 @@ parser.add_argument(
     help="disable jumphost (connection through VPN)",
 )
 parser.add_argument(
+    "--prefer-floating-ip",
+    default=False,
+    action="store_true",
+    help="prefer floating ips when setting up jumphost (connection through VPN)",
+)
+parser.add_argument(
     "--display",
     default=False,
     action="store_true",
@@ -373,11 +379,15 @@ ssh_config = ["BatchMode yes", "StrictHostKeyChecking no", "LogLevel QUIET"]
 jump_hosts = {}
 for (instance_id, instance) in total_instance_inventories.items():
     jump_hosts[instance["jump_host"]["hostname"]] = instance["jump_host"]
+    host_ip = instance["ip"]
+    if args.no_jumphost and args.prefer_floating_ip and instance["floating_ip"] is not None:
+        host_ip = instance["floating_ip"]
+
     ssh_config.append(
         get_ssh_config(
             host_name=instance_id,
             user=instance["ansible_user"],
-            host_ip=instance["ip"],
+            host_ip=host_ip,
             keypair=instance["keypair"],
             jump_host=None
             if args.no_jumphost
@@ -386,11 +396,14 @@ for (instance_id, instance) in total_instance_inventories.items():
     )
 
 for (host, config) in jump_hosts.items():
+    host_ip = config["ip"]
+    if args.prefer_floating_ip and instance["floating_ip"] is not None:
+        host_ip = instance["floating_ip"]
     ssh_config.append(
         get_ssh_config(
             host_name=host,
             user=config["user"],
-            host_ip=config["ip"],
+            host_ip=host_ip,
             keypair=config["keypair"],
         )
     )
