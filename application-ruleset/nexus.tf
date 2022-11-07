@@ -11,7 +11,7 @@ locals {
       service   = "nexus_docker_ingress"
       direction = "ingress"
       protocol  = "tcp"
-      ports     = [9080, 9081, 9082, 9083, 9084]
+      ports     = [9080, 9081, 9082, 9083, 9084, 9085]
       target    = "public"
     }
   }
