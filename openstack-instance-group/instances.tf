@@ -10,7 +10,7 @@ locals {
       availability_zone     = local.configuration.availability_zone
       network               = local.configuration.network
       create_security_group = false
-      security_groups       = distinct(concat(local.configuration.security_groups, [openstack_networking_secgroup_v2.instance_group_security_group.name]))
+      security_groups       = distinct(concat(local.configuration.security_groups, compact([local.security_group_name])))
       keypair               = local.configuration.keypair
       jump_host             = local.configuration.jump_host
       volumes               = local.configuration.volumes

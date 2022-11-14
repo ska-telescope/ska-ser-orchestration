@@ -1,17 +1,21 @@
 locals {
+  empty_group_rules   = {}
+  security_group_name = local.configuration.size == 0 ? null : openstack_networking_secgroup_v2.instance_group_security_group[0].name
+  security_group_id   = local.configuration.size == 0 ? null : openstack_networking_secgroup_v2.instance_group_security_group[0].id
   ssh_cidr_blocks = merge([
     for instance in module.instance : instance.instance.ssh_cidr_blocks
   ]...)
 }
 
 resource "openstack_networking_secgroup_v2" "instance_group_security_group" {
+  count       = local.configuration.size > 0 ? 1 : 0
   name        = "${local.configuration.name}-sg"
   description = "${local.configuration.name} security group"
 }
 
 resource "openstack_networking_secgroup_rule_v2" "ssh_sg_rule" {
-  for_each          = local.ssh_cidr_blocks
-  security_group_id = openstack_networking_secgroup_v2.instance_group_security_group.id
+  for_each          = local.configuration.size == 0 ? local.empty_group_rules : local.ssh_cidr_blocks
+  security_group_id = local.security_group_id
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
@@ -31,8 +35,8 @@ module "applications_ruleset" {
 }
 
 resource "openstack_networking_secgroup_rule_v2" "sg_rule" {
-  for_each          = module.applications_ruleset.ruleset
-  security_group_id = openstack_networking_secgroup_v2.instance_group_security_group.id
+  for_each          = local.configuration.size == 0 ? local.empty_group_rules : module.applications_ruleset.ruleset
+  security_group_id = local.security_group_id
   direction         = each.value.direction
   ethertype         = "IPv4"
   protocol          = each.value.protocol
