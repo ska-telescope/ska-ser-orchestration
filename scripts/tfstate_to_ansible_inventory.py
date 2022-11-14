@@ -378,7 +378,9 @@ ssh_config = ["BatchMode yes", "StrictHostKeyChecking no", "LogLevel QUIET"]
 # Add jump hosts
 jump_hosts = {}
 for (instance_id, instance) in total_instance_inventories.items():
-    jump_hosts[instance["jump_host"]["hostname"]] = instance["jump_host"]
+    if instance["jump_host"] is not None:
+        jump_hosts[instance["jump_host"]["hostname"]] = instance["jump_host"]
+
     instance_ip = instance["ip"]
     if (
         args.no_jumphost
@@ -394,7 +396,7 @@ for (instance_id, instance) in total_instance_inventories.items():
             host_ip=instance_ip,
             keypair=instance["keypair"],
             jump_host=None
-            if args.no_jumphost
+            if (args.no_jumphost or instance["jump_host"] is None)
             else instance["jump_host"]["hostname"],
         )
     )
