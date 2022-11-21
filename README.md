@@ -4,129 +4,173 @@ This repository contains custom SKA **Terraform** modules used to create base un
 
 ## Prerequisites
 
-* **Terraform** 1.2.x (see https://learn.hashicorp.com/tutorials/terraform/install-cli)
-* **TFLint** 0.40.1 (see https://github.com/terraform-linters/tflint#installation)
-* **Python** 3.x (see https://www.python.org/downloads/)
-* **Poetry** 3.x (see https://python-poetry.org/docs/#installation)
+| Collection            | Version            |
+| --------------------- | -------------------|
+| [**Terraform**](https://learn.hashicorp.com/tutorials/terraform/install-cli) | 1.2.x |
+| [**TFLint**](https://github.com/terraform-linters/tflint#installation) | 0.40.1 |
+| [**Python**](https://www.python.org/downloads/) | 3.x |
+| [**Poetry**](https://python-poetry.org/docs/#installation) | 3.x |
+
+
+> :warning: Terraform version is not the latest
+> 
+> You need to install a fix version (1.2.X -> latest version of v1.2). 
+> 
+> Installation steps depend on host's Operating System.
 
 ## Application Security
 
 The modules used to create instances enforce the creation of a separate security group. This is so to avoid having too-permissive security groups. To use this, simply add the variable **applications** - a list of strings - to your **instance** or **instance-group** containing one or more of the supported applications:
 
-* **elasticsearch**
-  * api: 9200
-  * transport: 9300
-  * elasticsearch_exporter: 9114
-* **kibana**
-  * frontend: 5601
-* **node_exporter**
-  * api: 9100
-* **prometheus**
-  * api: 9090
-  * alert manager: 9093
-* **grafana**
-  * frontend: 3000
-* **thanos_sidecar**
-  * api: 10901
-* **thanos**
-  * querier: 9091
-  * frontend: 9095
-* **nexus**
-  * http: 8081
-  * docker: 9080-9084
+
+<table>
+    <thead>
+        <tr>
+            <th>Application</th>
+            <th>Service</th>
+            <th>Port Number</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan=3>elasticsearch</td>
+            <td>api</td>
+            <td>9200</td>
+        </tr>        
+        <tr>
+            <td>transport</td>
+            <td>9300</td>
+        </tr>        
+        <tr>
+            <td>elasticsearch_exporter</td>
+            <td>9114</td>
+        </tr>
+        <tr>
+            <td>kibana</td>
+            <td>frontend</td>
+            <td>5601</td>
+        </tr>          
+        <tr>
+            <td>node_exporter</td>
+            <td>api</td>
+            <td>9100</td>
+        </tr>          
+        <tr>
+            <td rowspan=2>prometheus</td>
+            <td>api</td>
+            <td>9090</td>
+        </tr>  
+        <tr>
+            <td>alert manager</td>
+            <td>9093</td>
+        </tr>
+          <tr>
+            <td>thanos_sidecar</td>
+            <td>api</td>
+            <td>10901</td>
+        </tr>  
+        <tr>
+            <td rowspan=2>thanos</td>
+            <td>querier</td>
+            <td>9091</td>
+        </tr>  
+        <tr>
+            <td>frontend</td>
+            <td>9095</td>
+        </tr>
+        <tr>
+            <td rowspan=2>thanos</td>
+            <td>http</td>
+            <td>8081</td>
+        </tr>
+        <tr>
+            <td>docker</td>
+            <td>9080-9084</td>
+        </tr>  
+    </tbody>
+</table>
 
 # Make Targets
 
 Currently, the following make targets are supplied:
 
-* format - Formats Python and Terraform code
-  * Requires **terraform** and **poetry**
-```
-poetry shell
-poetry install
-make format
-```
-
-* lint - Lints Python and Terraform code
-  * Requires **terraform**, **poetry** and **tflint**
-
-```
-poetry shell
-poetry install
-make lint
-```
-
-We also provide targets that are meant to be used by [infra machinery](https://gitlab.com/ska-telescope/sdi/ska-ser-infra-machinery):
-* init - Initializes the modules in the target directory
-* plan - Plans the convergence operations in the target directory
-* apply - Applies the configuration in the target directory
-* destroy - Destroys the configuration in the target directory
-* refresh - Refreshes the resources declared in the target directory's configuration
-* generate-inventory - Generates the ansible inventory and ssh config of the current Terraform state
+| Target | Description |
+| ------ | ----------- | 
+| format | Formats Python and Terraform code |
+| lint | Lints Python and Terraform code |
+| init | Initializes the modules in the target directory |
+| plan | Plans the convergence operations in the target directory |
+| apply | Applies the configuration in the target directory |
+| destroy | Destroys the configuration in the target directory |
+| generate-inventory | Generates the ansible inventory and ssh config of the current Terraform state |
 
 ## Modules
 
 Currently, the following modules are provided in this repository:
 
+
 <table>
-<tr>
-<td> Module </td> <td> Description </td> <td> Input & Output </td>
-</tr>
-<tr>
-<td> openstack-instance </td>
-<td> Creates an OpenStack instance and required volumes, attaching them to the instance. If enabled, also creates a security group for the instance </td>
-<td>
-
-[Inputs](openstack-instance/variables.tf)
-
-[Outputs](openstack-instance/outputs.tf)
-
-</td>
-<tr></tr>
-<td> openstack-instance-group </td>
-<td> Creates a group of equally configured OpenStack instances and volumes, attaching volumes to the respective instances. Creats a security group shared by all instances of the group</td>
-<td>
-
-[Inputs](openstack-instance-group/variables.tf)
-
-[Outputs](openstack-instance-group/outputs.tf)
-
-</td>
-<tr></tr>
-<td> openstack-elasticsearch-cluster </td>
-<td> Creates an Elasticsearch cluster (elasticsearch & kibana) using OpenStack instances. All instances are created with an instance group to facilitate up and down scaling </td>
-<td>
-
-[Inputs](openstack-elasticsearch-cluster/variables.tf)
-
-[Outputs](openstack-elasticsearch-cluster/outputs.tf)
-
-</td>
-<tr></tr>
-<td> application-ruleset </td>
-<td> Provides a mapping between a set of applications to be ran on a particular instance. and the security group rules required </td>
-<td>
-
-[Inputs](application-ruleset/variables.tf)
-
-[Outputs](application-ruleset/outputs.tf)
-
-</td>
+    <thead>
+        <tr>
+            <th> Module </th>
+            <th> Description </th>
+            <th> Input & Output </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td> openstack-instance </td>
+            <td> Creates an OpenStack instance and required volumes, attaching them to the instance. If enabled, also
+                creates a security group for the instance </td>
+            <td><a href="./openstack-instance/variables.tf">Inputs</a><br><br><a
+                    href="./openstack-instance/outputs.tf">Outputs</a></td>
+        </tr>
+        <tr>
+            <td> openstack-instance-group </td>
+            <td> Creates a group of equally configured OpenStack instances and volumes, attaching volumes to the
+                respective
+                instances. Creats a security group shared by all instances of the group</td> 
+            <td><a href="./openstack-instance-group/variables.tf">Inputs</a><br><br><a
+                    href="./openstack-instance-group/outputs.tf">Outputs</a></td>
+            </td>
+        </tr>
+        <tr>
+            <td> openstack-elasticsearch-cluster </td>
+            <td> Creates an Elasticsearch cluster (elasticsearch & kibana) using OpenStack instances. All instances are
+                created with an instance group to facilitate up and down scaling </td>
+            <td><a href="./openstack-elasticsearch-cluster/variables.tf">Inputs</a><br><br><a
+                    href="./openstack-elasticsearch-cluster/outputs.tf">Outputs</a></td>
+            </td>
+        </tr>
+        <tr>
+            <td> application-ruleset </td>
+            <td>Provides a mapping between a set of applications to be ran on a particular instance. and the security
+                group rules required</td>
+            <td><a href="./application-ruleset/variables.tf">Inputs</a><br><br><a
+                    href="./application-ruleset/outputs.tf">Outputs</a></td>
+    </tbody>
 </table>
 
 ## Getting started
 
 To get started, we need to install Terraform as shown here: https://learn.hashicorp.com/tutorials/terraform/install-cli. To execute Terraform code, the following is required:
-* terraform.tf - Contains the **terraform** block object with the **state** configuration and required **providers** and their configurations (see https://www.terraform.io/language/settings and https://www.terraform.io/language/providers)
-* variables.tf - Declaration of the input variables to use in our code (see https://www.terraform.io/language/values/variables)
-* terraform.tfvars - Definition of the input variables declared above (see https://www.terraform.io/language/values/variables)
-* Terraform code with the intended configuration, written in **.tf** files (see https://www.terraform.io/language/syntax)
+* **terraform.tf**
+  * Contains the **terraform** block object with the **state** configuration and required **providers** and their configurations;
+  * see [Terraform Settings](https://www.terraform.io/language/settings) and [Providers](https://www.terraform.io/language/providers).
+* **variables.tf** 
+  * Declaration of the input variables to use in our code;
+  * see [Terraform Variables](https://www.terraform.io/language/values/variables).
+* **terraform.tfvars** 
+  * Definition of the input variables declared above;
+  * see [Terraform Variables](https://www.terraform.io/language/values/variables).
+* Terraform code with the intended configuration, written in **.tf** files
+  * see [Terraform Syntax](https://www.terraform.io/language/syntax).
 
 To make it simpler, we've created an example for each module we provide. They contain full definitions for the files described above.
 
 To deploy the examples, you need:
 * Gitlab access token, generated with the **api** permission
-* OpenStack clouds.yaml configured, with a cloud named **engage** (see https://docs.openstack.org/python-openstackclient/pike/configuration/index.html)
+* OpenStack clouds.yaml configured, with a cloud named **engage** (see [Openstack CLI Configuration](https://docs.openstack.org/python-openstackclient/pike/configuration/index.html))
 
 > **_NOTE:_** You can use any other cloud other than **engage**. For that, you need to adjust all **terraform.tfvars** files in the examples accordingly
 
@@ -398,3 +442,7 @@ Terraform is the state-of-the-art infrastructure as a code tool, with a huge com
   * Kubernetes: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
 
 Also, there is a multitude of tutorials online, like https://www.youtube.com/watch?v=l5k1ai_GBDE&ab_channel=TechWorldwithNana. Most of the tutorials use AWS/GCP/Azure resources, although the same logic and strategies apply to our and new use cases. Use our examples as a study case for OpenStack.
+
+## License
+
+BSD-3.
