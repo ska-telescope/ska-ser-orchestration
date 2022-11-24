@@ -442,7 +442,3 @@ Terraform is the state-of-the-art infrastructure as a code tool, with a huge com
   * Kubernetes: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
 
 Also, there is a multitude of tutorials online, like https://www.youtube.com/watch?v=l5k1ai_GBDE&ab_channel=TechWorldwithNana. Most of the tutorials use AWS/GCP/Azure resources, although the same logic and strategies apply to our and new use cases. Use our examples as a study case for OpenStack.
-
-## License
-
-BSD-3.
