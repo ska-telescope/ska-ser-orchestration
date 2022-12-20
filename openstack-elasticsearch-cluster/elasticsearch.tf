@@ -29,7 +29,7 @@ module "elasticsearch_master" {
     ]
     applications = distinct(flatten([for role in local.elasticsearch.master.roles : local.role_applications[role]]))
     metadata = {
-      roles = join(",",  local.elasticsearch.master.roles)
+      roles = join(",", local.elasticsearch.master.roles)
     }
   }
 }

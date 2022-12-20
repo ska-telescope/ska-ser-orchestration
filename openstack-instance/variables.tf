@@ -26,7 +26,7 @@ variable "configuration" {
     availability_zone     = optional(string)
     network               = optional(string)
     create_security_group = optional(bool, true)
-    security_groups       = optional(list(string),[])
+    security_groups       = optional(list(string), [])
     keypair               = optional(string)
     jump_host             = optional(string)
     metadata              = optional(map(string), {})
