@@ -1,8 +1,3 @@
-locals {
-  master_roles = length(local.elasticsearch.master.roles) > 0 ? local.elasticsearch.master.roles : ["master"]
-  data_roles   = length(local.elasticsearch.data.roles) > 0 ? local.elasticsearch.data.roles : ["data"]
-}
-
 module "elasticsearch_master" {
   source   = "../openstack-instance-group"
   defaults = var.defaults
@@ -32,9 +27,9 @@ module "elasticsearch_master" {
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = distinct(flatten([for role in local.master_roles : local.role_applications[role]]))
+    applications = distinct(flatten([for role in local.elasticsearch.master.roles : local.role_applications[role]]))
     metadata = {
-      roles = join(",", local.master_roles)
+      roles = join(",",  local.elasticsearch.master.roles)
     }
   }
 }
@@ -68,9 +63,9 @@ module "elasticsearch_data" {
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = distinct(flatten([for role in local.data_roles : local.role_applications[role]]))
+    applications = distinct(flatten([for role in local.elasticsearch.data.roles : local.role_applications[role]]))
     metadata = {
-      roles = join(",", local.data_roles)
+      roles = join(",", local.elasticsearch.data.roles)
     }
   }
 }
