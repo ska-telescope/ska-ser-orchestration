@@ -1,6 +1,6 @@
 locals {
   subnet_ids = toset(distinct(flatten([
-    for subnet in merge(data.openstack_networking_network_v2.network.*...) :
+    for subnet in merge([for net in data.openstack_networking_network_v2.network[*] : net]...) :
     subnet.subnets
   ])))
   subnets = { for subnet in data.openstack_networking_subnet_v2.subnet : subnet.name => subnet.cidr }
