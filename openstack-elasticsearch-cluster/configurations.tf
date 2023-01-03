@@ -1,3 +1,0 @@
-locals {
-  elasticsearch = var.elasticsearch
-}

@@ -1,3 +1,0 @@
-locals {
-  ceph = var.ceph
-}

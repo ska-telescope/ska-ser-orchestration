@@ -6,30 +6,30 @@ module "elasticsearch_master" {
   }
 
   configuration = {
-    name              = join("-", [local.elasticsearch.name, local.elasticsearch.master.name])
-    size              = local.elasticsearch.master.size
-    flavor            = local.elasticsearch.master.flavor
-    image             = local.elasticsearch.master.image
-    availability_zone = local.elasticsearch.master.availability_zone
-    network           = local.elasticsearch.master.network
+    name              = join("-", [var.elasticsearch.name, var.elasticsearch.master.name])
+    size              = var.elasticsearch.master.size
+    flavor            = var.elasticsearch.master.flavor
+    image             = var.elasticsearch.master.image
+    availability_zone = var.elasticsearch.master.availability_zone
+    network           = var.elasticsearch.master.network
     security_groups   = []
-    keypair           = local.elasticsearch.master.keypair
-    jump_host         = local.elasticsearch.master.jump_host
+    keypair           = var.elasticsearch.master.keypair
+    jump_host         = var.elasticsearch.master.jump_host
     volumes = [
       {
         name        = "data"
-        size        = local.elasticsearch.master.data_volume_size
+        size        = var.elasticsearch.master.data_volume_size
         mount_point = "/var/lib/stack-data"
       },
       {
         name        = "docker"
-        size        = local.elasticsearch.master.docker_volume_size
+        size        = var.elasticsearch.master.docker_volume_size
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = distinct(flatten([for role in local.elasticsearch.master.roles : local.role_applications[role]]))
+    applications = distinct(flatten([for role in var.elasticsearch.master.roles : local.role_applications[role]]))
     metadata = {
-      roles = join(",", local.elasticsearch.master.roles)
+      roles = join(",", var.elasticsearch.master.roles)
     }
   }
 }
@@ -42,30 +42,30 @@ module "elasticsearch_data" {
   }
 
   configuration = {
-    name              = join("-", [local.elasticsearch.name, local.elasticsearch.data.name])
-    size              = local.elasticsearch.data.size
-    flavor            = local.elasticsearch.data.flavor
-    image             = local.elasticsearch.data.image
-    availability_zone = local.elasticsearch.data.availability_zone
-    network           = local.elasticsearch.data.network
+    name              = join("-", [var.elasticsearch.name, var.elasticsearch.data.name])
+    size              = var.elasticsearch.data.size
+    flavor            = var.elasticsearch.data.flavor
+    image             = var.elasticsearch.data.image
+    availability_zone = var.elasticsearch.data.availability_zone
+    network           = var.elasticsearch.data.network
     security_groups   = []
-    keypair           = local.elasticsearch.data.keypair
-    jump_host         = local.elasticsearch.data.jump_host
+    keypair           = var.elasticsearch.data.keypair
+    jump_host         = var.elasticsearch.data.jump_host
     volumes = [
       {
         name        = "data"
-        size        = local.elasticsearch.data.data_volume_size
+        size        = var.elasticsearch.data.data_volume_size
         mount_point = "/var/lib/stack-data"
       },
       {
         name        = "docker"
-        size        = local.elasticsearch.data.docker_volume_size
+        size        = var.elasticsearch.data.docker_volume_size
         mount_point = "/var/lib/docker"
       },
     ]
-    applications = distinct(flatten([for role in local.elasticsearch.data.roles : local.role_applications[role]]))
+    applications = distinct(flatten([for role in var.elasticsearch.data.roles : local.role_applications[role]]))
     metadata = {
-      roles = join(",", local.elasticsearch.data.roles)
+      roles = join(",", var.elasticsearch.data.roles)
     }
   }
 }

@@ -1,13 +1,13 @@
 locals {
   inventory = {
-    (local.elasticsearch.name) = {
+    (var.elasticsearch.name) = {
       children = merge([
         module.elasticsearch_master.inventory,
         module.elasticsearch_data.inventory,
         module.kibana.inventory
       ]...)
       hosts = merge([
-        local.elasticsearch.loadbalancer.deploy ? module.loadbalancer[0].inventory : null
+        var.elasticsearch.loadbalancer.deploy ? module.loadbalancer[0].inventory : null
       ]...)
     }
   }

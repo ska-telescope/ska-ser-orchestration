@@ -10,24 +10,24 @@ module "ceph_master" {
   }
 
   configuration = {
-    name              = join("_", [local.ceph.name, local.ceph.master.name])
-    size              = local.ceph.master.size
-    flavor            = local.ceph.master.flavor
-    image             = local.ceph.master.image
-    availability_zone = local.ceph.master.availability_zone
-    network           = local.ceph.master.network
+    name              = join("_", [var.ceph.name, var.ceph.master.name])
+    size              = var.ceph.master.size
+    flavor            = var.ceph.master.flavor
+    image             = var.ceph.master.image
+    availability_zone = var.ceph.master.availability_zone
+    network           = var.ceph.master.network
     security_groups   = []
-    keypair           = local.ceph.master.keypair
-    jump_host         = local.ceph.master.jump_host
+    keypair           = var.ceph.master.keypair
+    jump_host         = var.ceph.master.jump_host
     volumes = [
       {
         name        = "data"
-        size        = local.ceph.master.data_volume_size
+        size        = var.ceph.master.data_volume_size
         mount_point = ""
       },
       {
         name        = "wal"
-        size        = local.ceph.master.wal_volume_size
+        size        = var.ceph.master.wal_volume_size
         mount_point = ""
       },
     ]
@@ -43,24 +43,24 @@ module "ceph_worker" {
   }
 
   configuration = {
-    name              = join("_", [local.ceph.name, local.ceph.worker.name])
-    size              = local.ceph.worker.size
-    flavor            = local.ceph.worker.flavor
-    image             = local.ceph.worker.image
-    availability_zone = local.ceph.worker.availability_zone
-    network           = local.ceph.worker.network
+    name              = join("_", [var.ceph.name, var.ceph.worker.name])
+    size              = var.ceph.worker.size
+    flavor            = var.ceph.worker.flavor
+    image             = var.ceph.worker.image
+    availability_zone = var.ceph.worker.availability_zone
+    network           = var.ceph.worker.network
     security_groups   = []
-    keypair           = local.ceph.worker.keypair
-    jump_host         = local.ceph.worker.jump_host
+    keypair           = var.ceph.worker.keypair
+    jump_host         = var.ceph.worker.jump_host
     volumes = [
       {
         name        = "data"
-        size        = local.ceph.worker.data_volume_size
+        size        = var.ceph.worker.data_volume_size
         mount_point = ""
       },
       {
         name        = "wal"
-        size        = local.ceph.worker.wal_volume_size
+        size        = var.ceph.worker.wal_volume_size
         mount_point = ""
       },
     ]
