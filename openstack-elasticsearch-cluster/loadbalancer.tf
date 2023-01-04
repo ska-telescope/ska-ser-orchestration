@@ -1,5 +1,5 @@
 locals {
-  floating_ip_configuration = local.elasticsearch.loadbalancer.floating_ip != null ? local.elasticsearch.loadbalancer.floating_ip : {
+  floating_ip_configuration = var.elasticsearch.loadbalancer.floating_ip != null ? var.elasticsearch.loadbalancer.floating_ip : {
     create  = true
     network = null
     address = null
@@ -8,25 +8,25 @@ locals {
 
 module "loadbalancer" {
   source   = "../openstack-instance"
-  count    = local.elasticsearch.loadbalancer.deploy ? 1 : 0
+  count    = var.elasticsearch.loadbalancer.deploy ? 1 : 0
   defaults = var.defaults
   providers = {
     openstack = openstack
   }
 
   configuration = {
-    name              = join("-", [local.elasticsearch.name, local.elasticsearch.loadbalancer.name])
-    flavor            = local.elasticsearch.loadbalancer.flavor
-    image             = local.elasticsearch.loadbalancer.image
-    availability_zone = local.elasticsearch.loadbalancer.availability_zone
-    network           = local.elasticsearch.loadbalancer.network
+    name              = join("-", [var.elasticsearch.name, var.elasticsearch.loadbalancer.name])
+    flavor            = var.elasticsearch.loadbalancer.flavor
+    image             = var.elasticsearch.loadbalancer.image
+    availability_zone = var.elasticsearch.loadbalancer.availability_zone
+    network           = var.elasticsearch.loadbalancer.network
     security_groups   = []
-    keypair           = local.elasticsearch.loadbalancer.keypair
-    jump_host         = local.elasticsearch.loadbalancer.jump_host
+    keypair           = var.elasticsearch.loadbalancer.keypair
+    jump_host         = var.elasticsearch.loadbalancer.jump_host
     volumes = [
       {
         name        = "docker"
-        size        = local.elasticsearch.loadbalancer.docker_volume_size
+        size        = var.elasticsearch.loadbalancer.docker_volume_size
         mount_point = "/var/lib/docker"
       }
     ]

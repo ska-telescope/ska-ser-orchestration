@@ -12,7 +12,7 @@ locals {
   ssh_cidr_blocks          = merge(local.jump_host_cidr_blocks, local.vpn_cidr_blocks)
   instance_ssh_cidr_blocks = local.configuration.create_security_group ? local.ssh_cidr_blocks : {}
   ruleset                  = local.configuration.create_security_group ? module.applications_ruleset.ruleset : {}
-  instance_security_group  = local.configuration.create_security_group ? openstack_networking_secgroup_v2.instance_security_group.*.name : []
+  instance_security_group  = local.configuration.create_security_group ? [for sg in openstack_networking_secgroup_v2.instance_security_group : sg.name] : []
 }
 
 resource "openstack_networking_secgroup_v2" "instance_security_group" {

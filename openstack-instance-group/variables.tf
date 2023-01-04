@@ -15,21 +15,21 @@ variable "defaults" {
 variable "configuration" {
   type = object({
     name              = string
-    size              = optional(number)
+    size              = optional(number, 1)
     flavor            = optional(string)
     image             = optional(string)
     availability_zone = optional(string)
     network           = optional(string)
-    security_groups   = optional(list(string))
+    security_groups   = optional(list(string), [])
     keypair           = optional(string)
     jump_host         = optional(string)
-    metadata          = optional(map(string))
+    metadata          = optional(map(string), {})
     volumes = optional(list(object({
       name        = string
       size        = number
       mount_point = string
-    })))
-    applications = optional(list(string))
+    })), [])
+    applications = optional(list(string), [])
   })
   description = "Instance group configuration"
 }

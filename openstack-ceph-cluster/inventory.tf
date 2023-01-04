@@ -1,6 +1,6 @@
 locals {
   inventory = {
-    (local.ceph.name) = {
+    (var.ceph.name) = {
       children = merge([
         module.ceph_master.inventory,
         module.ceph_worker.inventory

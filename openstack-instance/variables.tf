@@ -25,17 +25,17 @@ variable "configuration" {
     image                 = optional(string)
     availability_zone     = optional(string)
     network               = optional(string)
-    create_security_group = optional(bool)
-    security_groups       = optional(list(string))
+    create_security_group = optional(bool, true)
+    security_groups       = optional(list(string), [])
     keypair               = optional(string)
     jump_host             = optional(string)
-    metadata              = optional(map(string))
+    metadata              = optional(map(string), {})
     volumes = optional(list(object({
       name        = string
       size        = number
       mount_point = string
-    })))
-    applications       = optional(list(string))
+    })), [])
+    applications       = optional(list(string), [])
     create_floating_ip = optional(bool)
     floating_ip = optional(object({
       create  = optional(bool)

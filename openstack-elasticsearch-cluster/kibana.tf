@@ -6,19 +6,19 @@ module "kibana" {
   }
 
   configuration = {
-    name              = join("-", [local.elasticsearch.name, local.elasticsearch.kibana.name])
-    size              = local.elasticsearch.kibana.size
-    flavor            = local.elasticsearch.kibana.flavor
-    image             = local.elasticsearch.kibana.image
-    availability_zone = local.elasticsearch.kibana.availability_zone
-    network           = local.elasticsearch.kibana.network
+    name              = join("-", [var.elasticsearch.name, var.elasticsearch.kibana.name])
+    size              = var.elasticsearch.kibana.size
+    flavor            = var.elasticsearch.kibana.flavor
+    image             = var.elasticsearch.kibana.image
+    availability_zone = var.elasticsearch.kibana.availability_zone
+    network           = var.elasticsearch.kibana.network
     security_groups   = []
-    keypair           = local.elasticsearch.kibana.keypair
-    jump_host         = local.elasticsearch.kibana.jump_host
+    keypair           = var.elasticsearch.kibana.keypair
+    jump_host         = var.elasticsearch.kibana.jump_host
     volumes = [
       {
         name        = "docker"
-        size        = local.elasticsearch.kibana.docker_volume_size
+        size        = var.elasticsearch.kibana.docker_volume_size
         mount_point = "/var/lib/docker"
       }
     ]

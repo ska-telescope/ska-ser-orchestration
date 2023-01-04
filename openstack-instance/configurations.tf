@@ -1,15 +1,10 @@
 locals {
-  configuration = defaults(var.configuration, {
-    flavor                = var.defaults.flavor
-    image                 = var.defaults.image
-    availability_zone     = var.defaults.availability_zone
-    network               = var.defaults.network
-    create_security_group = true
-    security_groups       = ""
-    keypair               = var.defaults.keypair
-    jump_host             = var.defaults.jump_host
-    volumes               = {}
-    applications          = ""
-    metadata              = ""
+  configuration = merge(var.configuration, {
+    flavor            = coalesce(var.configuration.flavor, var.defaults.flavor)
+    image             = coalesce(var.configuration.image, var.defaults.image)
+    availability_zone = coalesce(var.configuration.availability_zone, var.defaults.availability_zone)
+    network           = coalesce(var.configuration.network, var.defaults.network)
+    keypair           = coalesce(var.configuration.keypair, var.defaults.keypair)
+    jump_host         = try(coalesce(var.configuration.jump_host, var.defaults.jump_host), null)
   })
 }
