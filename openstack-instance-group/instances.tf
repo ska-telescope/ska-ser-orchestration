@@ -16,6 +16,7 @@ locals {
       volumes               = local.configuration.volumes
       applications          = local.configuration.applications
       metadata              = local.configuration.metadata
+      port_security_enabled = local.configuration.port_security_enabled
     }
   }
 }
