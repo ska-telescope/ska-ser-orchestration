@@ -12,7 +12,7 @@ locals {
       direction = "ingress"
       protocol  = "tcp"
       ports     = [9443, 6443]
-      target    = "network"
+      target    = "public"
     }
     reverseproxy_thanos_sidecar = {
       service   = "reverseproxy"
