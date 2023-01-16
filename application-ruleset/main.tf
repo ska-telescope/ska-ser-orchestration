@@ -4,6 +4,7 @@ locals {
     elasticsearch         = local.elasticsearch_rules
     kibana                = local.kibana_rules
     node_exporter         = local.node_exporter_rules
+    docker_exporter       = local.docker_exporter_rules
     prometheus            = local.prometheus_rules
     grafana               = local.grafana_rules
     thanos_sidecar        = local.thanos_sidecar_rules
@@ -13,6 +14,7 @@ locals {
     ceph                  = local.ceph_rules
     nexus                 = local.nexus_rules
     reverseproxy          = local.reverseproxy_rules
+    openvpn               = local.openvpn_rules
   }
 
   application_ruleset = flatten([
