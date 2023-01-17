@@ -15,11 +15,11 @@ locals {
       target    = "network"
     },
     nexus_docker_ingress = {
-      service   = "nexus_docker_ingress"
-      direction = "ingress"
-      protocol  = "tcp"
-      ports     = [9080, 9081, 9082, 9083, 9084, 9085]
-      target    = "public"
+      service    = "nexus_docker_ingress"
+      direction  = "ingress"
+      protocol   = "tcp"
+      port_range = [9080, 9090]
+      target     = "public"
     }
   }
 }

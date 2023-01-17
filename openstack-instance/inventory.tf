@@ -22,13 +22,13 @@ locals {
       services = merge([
         for rule in module.applications_ruleset.ruleset : {
           for port in range(rule.port_range_min, rule.port_range_max + 1) :
-          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"
+          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"...
         } if rule.port_range_min != null && rule.port_range_max != null
       ]...)
       scrapes = merge([
         for rule in module.applications_ruleset.ruleset : {
           for port in range(rule.port_range_min, rule.port_range_max + 1) :
-          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"
+          rule.service => "${openstack_compute_instance_v2.instance.access_ip_v4}:${port}"...
         } if rule.scrape == true && rule.port_range_min != null && rule.port_range_max != null
       ]...)
     }
