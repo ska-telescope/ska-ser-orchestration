@@ -5,8 +5,8 @@ output "instance" {
     name   = openstack_compute_instance_v2.instance.name
     flavor = openstack_compute_instance_v2.instance.flavor_name
     image = {
-      name = data.openstack_images_image_v2.image.name
-      id   = data.openstack_images_image_v2.image.id
+      name = local.image.name
+      id   = local.image.id
     }
     volumes = [
       for volume in openstack_blockstorage_volume_v3.volume : merge(volume.metadata, {

@@ -1,7 +1,12 @@
 locals {
-  az                  = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
-  jump_host           = length(keys(data.external.jump_host.result)) > 0 ? data.external.jump_host.result : null
-  jump_host_addresses = local.jump_host != null ? split(",", data.external.jump_host.result.addresses) : []
+  az                    = lookup({ for az in data.openstack_compute_availability_zones_v2.zones.names : az => az }, local.configuration.availability_zone)
+  jump_host             = length(keys(data.external.jump_host.result)) > 0 ? data.external.jump_host.result : null
+  jump_host_addresses   = local.jump_host != null ? split(",", data.external.jump_host.result.addresses) : []
+  skip_image_validation = length(regexall("^\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}$", local.configuration.image)) > 0
+  image = {
+    id   = local.skip_image_validation ? local.configuration.image : data.openstack_images_image_v2.image[0].id
+    name = local.configuration.image
+  }
 }
 
 data "openstack_compute_flavor_v2" "flavor" {
@@ -9,6 +14,7 @@ data "openstack_compute_flavor_v2" "flavor" {
 }
 
 data "openstack_images_image_v2" "image" {
+  count       = local.skip_image_validation ? 0 : 1
   name        = local.configuration.image
   most_recent = true
 }

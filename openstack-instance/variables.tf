@@ -30,6 +30,7 @@ variable "configuration" {
     keypair               = optional(string)
     jump_host             = optional(string)
     metadata              = optional(map(string), {})
+    create_port           = optional(bool, false)
     port_security_enabled = optional(bool, true)
     volumes = optional(list(object({
       name        = string
