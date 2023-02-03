@@ -4,6 +4,7 @@ locals {
 }
 
 resource "openstack_networking_port_v2" "network_port" {
+  count                 = local.configuration.create_port ? 1 : 0
   name                  = "${local.configuration.name}-${local.port_sufix}"
   network_id            = data.openstack_networking_network_v2.network.id
   port_security_enabled = local.configuration.port_security_enabled
@@ -21,9 +22,7 @@ resource "openstack_compute_instance_v2" "instance" {
 
   network {
     uuid = data.openstack_networking_network_v2.network.id
-    # port = openstack_networking_port_v2.network_port.id
-    # TODO: Uncomment port assignment when migration steps are available
-    # as part of https://jira.skatelescope.org/browse/ST-1491
+    port = local.configuration.create_port ? openstack_networking_port_v2.network_port[0].id : null
   }
 
   block_device {
