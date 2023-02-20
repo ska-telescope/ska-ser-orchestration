@@ -103,6 +103,13 @@ parser.add_argument(
     help="output directory",
 )
 parser.add_argument(
+    "-f",
+    dest="file_name",
+    required=False,
+    default="inventory.yml",
+    help="output file name",
+)
+parser.add_argument(
     "-i",
     dest="local_state",
     required=False,
@@ -367,7 +374,7 @@ inventory = {
 }
 
 # Output inventory
-inventory_path = os.path.join(output, "inventory.yml")
+inventory_path = os.path.join(output, args.file_name)
 with open(inventory_path, "w+", encoding="utf-8") as f:
     yaml.safe_dump(inventory, indent=2, stream=f)
     log.info("Inventory at %s", inventory_path)
@@ -385,7 +392,7 @@ for (instance_id, instance) in total_instance_inventories.items():
     if (
         args.no_jumphost
         and args.prefer_floating_ip
-        and instance["floating_ip"] is not None
+        and instance["floating_ip"] not in [None, ""]
     ):
         instance_ip = instance["floating_ip"]
 
@@ -403,8 +410,9 @@ for (instance_id, instance) in total_instance_inventories.items():
 
 for (host, config) in jump_hosts.items():
     jumphost_ip = config["ip"]
-    if args.prefer_floating_ip and config["floating_ip"] is not None:
+    if args.prefer_floating_ip and config["floating_ip"] not in [None, ""]:
         jumphost_ip = config["floating_ip"]
+
     ssh_config.append(
         get_ssh_config(
             host_name=host,
