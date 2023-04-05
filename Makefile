@@ -124,7 +124,7 @@ state-list: orch-check-service ## List the resources in the state
 
 state-rm: orch-check-service orch-check-target state-backup ## Remove a resource in the state
 	@terraform -chdir=$(TF_ROOT_DIR) state pull > $(TF_STATE_BACKUP_FILE)
-	@read -r -p "Are you sure? [y/N] " response; \
+	@read -r -p "Are you sure you want to remove \"$(TF_TARGET)\" ? [y/N] " response; \
 	if [ "$$response" = "y" ] || [ "$$response" = "Y" ] | [ "$$response" = "yes" ]; then \
 	  terraform -chdir=$(TF_ROOT_DIR) state rm $(TF_ARGUMENTS); \
 	fi
