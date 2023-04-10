@@ -8,4 +8,4 @@ requirements.txt
 ssh.config
 PrivateRules.mak
 **/clouds.yaml
-**/terraform.tfstate.backup
+.terraform.tfstate*
