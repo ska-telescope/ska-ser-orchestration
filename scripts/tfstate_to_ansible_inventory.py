@@ -157,7 +157,7 @@ parser.add_argument(
     dest="downstream_precedence",
     default=False,
     action="store_true",
-    help="give predence to downstream inventories",
+    help="give precedence to downstream inventories",
 )
 
 args = parser.parse_args()
