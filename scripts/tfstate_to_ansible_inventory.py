@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import pathlib
+import re
 import sys
 from argparse import ArgumentParser
 
@@ -139,22 +140,26 @@ parser.add_argument(
 )
 parser.add_argument(
     "--no-jumphost",
+    dest="no_jumphost",
     default=False,
     action="store_true",
     help="disable jumphost (connection through VPN)",
 )
 parser.add_argument(
     "--prefer-floating-ip",
+    dest="prefer_floating_ip",
     default=False,
     action="store_true",
     help="prefer floating ips when setting up jumphost",
 )
 parser.add_argument(
-    "--display",
+    "--downstream-precedence",
+    dest="downstream_precedence",
     default=False,
     action="store_true",
-    help="set to output the generated inventory",
+    help="give precedence to downstream inventories",
 )
+
 args = parser.parse_args()
 if args.no_jumphost:
     log.info("** ---------- Jumphost DISABLED ---------- **")
@@ -325,12 +330,53 @@ for state in states["project"]["terraformStates"]["nodes"]:
         **total_instance_group_inventories,
         **instance_group_inventories,
     }
-
     total_instance_inventories = {
         **total_instance_inventories,
         **instance_inventories,
     }
 
+# Update instance inventories in their groups
+# This is needed for us to pull changes done to the instance inventory
+# but not to the upstream groups
+if args.downstream_precedence:
+    for (
+        instance_group_name,
+        instance_group,
+    ) in total_instance_group_inventories.items():
+        for (
+            instance_name,
+            instance_inventory,
+        ) in instance_group["hosts"].items():
+            downstream_instance_inventory = total_instance_inventories.get(
+                instance_name, instance_inventory
+            )
+            if (
+                downstream_instance_inventory is not None
+                and downstream_instance_inventory != instance_inventory
+            ):
+                log.warning(
+                    "Downstream inventory differs for '%s' at '%s'",
+                    instance_name,
+                    instance_group_name,
+                )
+                instance_group["hosts"][
+                    instance_name
+                ] = downstream_instance_inventory
+
+    # Try to assign loose instances to groups of the same name
+    for instance_name in total_instance_inventories:
+        if instance_name not in instances_with_parent:
+            for (
+                instance_group_name,
+                instance_group,
+            ) in total_instance_group_inventories.items():
+                if re.match(instance_group_name + r"-i[0-9]+", instance_name):
+                    log.warning(
+                        "Assigning loose instance '%s' to '%s' ...",
+                        instance_name,
+                        instance_group_name,
+                    )
+                    instance_group["hosts"][instance_name] = None
 
 # Create inventory
 inventory = {
