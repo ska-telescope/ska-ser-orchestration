@@ -123,7 +123,6 @@ state-list: orch-check-service ## List the resources in the state
 	@terraform -chdir=$(TF_ROOT_DIR) state list $(TF_ARGUMENTS)
 
 state-rm: orch-check-service orch-check-target state-backup ## Remove a resource in the state
-	@terraform -chdir=$(TF_ROOT_DIR) state pull > $(TF_STATE_BACKUP_FILE)
 	@read -r -p "Are you sure you want to remove \"$(TF_TARGET)\" ? [y/N] " response; \
 	if [ "$$response" = "y" ] || [ "$$response" = "Y" ] | [ "$$response" = "yes" ]; then \
 	  terraform -chdir=$(TF_ROOT_DIR) state rm $(TF_ARGUMENTS); \
@@ -136,7 +135,7 @@ untaint: orch-check-service orch-check-target ## Untaint state resources. Filter
 	@terraform -chdir=$(TF_ROOT_DIR) untaint $(TF_ARGUMENTS)
 
 generate-inventory:
-	scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) $(GENERATE_INVENTORY_ARGS)
+	@scripts/tfstate_to_ansible_inventory.py -o $(TF_INVENTORY_DIR) $(GENERATE_INVENTORY_ARGS)
 
 help: ## Show Help
 	@echo ""
