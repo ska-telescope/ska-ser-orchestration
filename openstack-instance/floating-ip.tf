@@ -38,4 +38,10 @@ resource "openstack_compute_floatingip_associate_v2" "floating_ip" {
   instance_id           = openstack_compute_instance_v2.instance.id
   fixed_ip              = openstack_compute_instance_v2.instance.access_ip_v4
   wait_until_associated = true
+
+  lifecycle {
+    ignore_changes = [
+      wait_until_associated
+    ]
+  }
 }
