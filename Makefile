@@ -19,6 +19,8 @@ DATACENTRE?=
 SERVICE?=
 GITLAB_PROJECT_ID?=
 
+PYTHON_SWITCHES_FOR_PYLINT = --disable "duplicate-code"
+
 TIMESTAMP=$(shell date +%s)
 
 GENERATE_INVENTORY_ARGS?=
