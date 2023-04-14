@@ -9,10 +9,11 @@ locals {
     (cidr_block) => "VPN access from ${cidr_block}"
   }
 
-  ssh_cidr_blocks          = merge(local.jump_host_cidr_blocks, local.vpn_cidr_blocks)
-  instance_ssh_cidr_blocks = local.configuration.create_security_group ? local.ssh_cidr_blocks : {}
-  ruleset                  = local.configuration.create_security_group ? module.applications_ruleset.ruleset : {}
-  instance_security_group  = local.configuration.create_security_group ? [for sg in openstack_networking_secgroup_v2.instance_security_group : sg.name] : []
+  ssh_cidr_blocks             = merge(local.jump_host_cidr_blocks, local.vpn_cidr_blocks)
+  instance_ssh_cidr_blocks    = local.configuration.create_security_group ? local.ssh_cidr_blocks : {}
+  ruleset                     = local.configuration.create_security_group ? module.applications_ruleset.ruleset : {}
+  instance_security_group     = local.configuration.create_security_group ? [for sg in openstack_networking_secgroup_v2.instance_security_group : sg.name] : []
+  instance_security_group_ids = local.configuration.create_security_group ? [for sg in openstack_networking_secgroup_v2.instance_security_group : sg.id] : []
 }
 
 resource "openstack_networking_secgroup_v2" "instance_security_group" {

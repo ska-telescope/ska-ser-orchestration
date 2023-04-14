@@ -33,7 +33,7 @@ LOGGING_FORMAT = (
     "[module=%(module)s] [line=%(lineno)d]: %(message)s"
 )
 logging.basicConfig(level=LOGGING_LEVEL, format=LOGGING_FORMAT)
-log = logging.getLogger("tfstate")
+log = logging.getLogger("tfstate_to_ansible_inventory")
 log.debug("Logging level is: %s", LOGGING_LEVEL)
 
 

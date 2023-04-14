@@ -19,16 +19,21 @@ DATACENTRE?=
 SERVICE?=
 GITLAB_PROJECT_ID?=
 
+PYTHON_SWITCHES_FOR_PYLINT = --disable "duplicate-code"
+
 TIMESTAMP=$(shell date +%s)
 
 GENERATE_INVENTORY_ARGS?=
 
-TF_STATE_MANAGEMENT_TARGETS = taint untaint state-rm
+TF_STATE_MANAGEMENT_TARGETS = taint untaint state-rm state-show
+TF_STATE_MANAGEMENT_TARGETS_MULTI_ARG = state-import
 TF_STATE_BACKUP_FILE = /tmp/$(SERVICE).terraform.$(TIMESTAMP).tfstate.bak
 
 ifneq ($(TF_TARGET),)
 ifneq ($(filter $(firstword $(MAKECMDGOALS)),$(TF_STATE_MANAGEMENT_TARGETS)),)
     TF_ARGUMENTS := '$(TF_TARGET)' $(TF_ARGUMENTS)
+else ifneq ($(filter $(firstword $(MAKECMDGOALS)),$(TF_STATE_MANAGEMENT_TARGETS_MULTI_ARG)),)
+    TF_ARGUMENTS := $(shell sed "s#\(.*\) \(.*\)#'\1' \2#" <<< $$TF_TARGET) $(TF_ARGUMENTS)
 else
     TF_ARGUMENTS := $(TF_ARGUMENTS) -target='$(TF_TARGET)'
 endif
@@ -122,10 +127,29 @@ refresh: orch-check-service ## Update the state on the backend. Filter with TF_T
 state-list: orch-check-service ## List the resources in the state
 	@terraform -chdir=$(TF_ROOT_DIR) state list $(TF_ARGUMENTS)
 
+state-pull: orch-check-service ## Pull the remote state to a local state file
+	@terraform -chdir=$(TF_ROOT_DIR) state pull $(TF_ARGUMENTS) > .terraform.tfstate
+	@cp .terraform.tfstate .terraform.tfstate.bak
+
+state-show: orch-check-service ## Show the resources in the state
+	@terraform -chdir=$(TF_ROOT_DIR) state show $(TF_ARGUMENTS)
+
+state-push: orch-check-service state-backup ## Push the local state to the remote
+	@read -r -p "Are you sure you want to push the state at \".terraform.tfstate\" ? [y/N] " response; \
+	if [ "$$response" = "y" ] || [ "$$response" = "Y" ] | [ "$$response" = "yes" ]; then \
+		cat .terraform.tfstate | terraform -chdir=$(TF_ROOT_DIR) state push $(TF_ARGUMENTS) -; \
+	fi
+
+state-import: orch-check-service state-backup ## Import resources to the state
+	@read -r -p "Are you sure you want to import \"$(TF_TARGET)\" ? [y/N] " response; \
+	if [ "$$response" = "y" ] || [ "$$response" = "Y" ] | [ "$$response" = "yes" ]; then \
+		terraform -chdir=$(TF_ROOT_DIR) import $(TF_ARGUMENTS); \
+	fi
+
 state-rm: orch-check-service orch-check-target state-backup ## Remove a resource in the state
 	@read -r -p "Are you sure you want to remove \"$(TF_TARGET)\" ? [y/N] " response; \
 	if [ "$$response" = "y" ] || [ "$$response" = "Y" ] | [ "$$response" = "yes" ]; then \
-	  terraform -chdir=$(TF_ROOT_DIR) state rm $(TF_ARGUMENTS); \
+		terraform -chdir=$(TF_ROOT_DIR) state rm $(TF_ARGUMENTS); \
 	fi
 
 taint: orch-check-service orch-check-target ## Taint state resources. Filter with TF_TARGET

@@ -9,6 +9,11 @@ locals {
   }
 }
 
+data "openstack_networking_secgroup_v2" "upstream_sg" {
+  for_each = toset(local.configuration.security_groups)
+  name     = each.value
+}
+
 data "openstack_compute_flavor_v2" "flavor" {
   name = local.configuration.flavor
 }
