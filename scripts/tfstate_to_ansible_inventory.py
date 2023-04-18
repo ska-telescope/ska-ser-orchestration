@@ -61,13 +61,20 @@ def get_inventory(this_tf_state, inventory_type):
             and resource["type"] == "null_resource"
             and resource["name"] == "inventory"
         ):
-            inventory_info = resource["instances"][0]["attributes"]["triggers"]
-            inventories = json.loads(
-                base64.b64decode(inventory_info["inventory"]).decode("utf-8")
-            )
-            if inventory_info["type"] == inventory_type:
-                for (inventory_id, inventory_value) in inventories.items():
-                    result[inventory_id] = inventory_value
+            if "instances" in resource and len(resource["instances"]) > 0:
+                inventory_info = resource["instances"][0]["attributes"][
+                    "triggers"
+                ]
+                inventories = json.loads(
+                    base64.b64decode(inventory_info["inventory"]).decode(
+                        "utf-8"
+                    )
+                )
+                if inventory_info["type"] == inventory_type:
+                    for (inventory_id, inventory_value) in inventories.items():
+                        result[inventory_id] = inventory_value
+            else:
+                log.error("Failed to retrieve inventory for '%s'", resource)
 
     return result
 
