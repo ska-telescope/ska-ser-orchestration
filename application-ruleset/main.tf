@@ -15,6 +15,7 @@ locals {
     nexus                 = local.nexus_rules
     reverseproxy          = local.reverseproxy_rules
     openvpn               = local.openvpn_rules
+    dns                   = local.dns_rules
   }
 
   application_ruleset = flatten([
