@@ -14,18 +14,19 @@ variable "defaults" {
 
 variable "configuration" {
   type = object({
-    name                  = string
-    size                  = optional(number, 1)
-    flavor                = optional(string)
-    image                 = optional(string)
-    availability_zone     = optional(string)
-    network               = optional(string)
-    security_groups       = optional(list(string), [])
-    keypair               = optional(string)
-    jump_host             = optional(string)
-    metadata              = optional(map(string), {})
-    create_port           = optional(bool, false)
-    port_security_enabled = optional(bool, true)
+    name                     = string
+    size                     = optional(number, 1)
+    flavor                   = optional(string)
+    image                    = optional(string)
+    availability_zone        = optional(string)
+    network                  = optional(string)
+    security_groups          = optional(list(string), [])
+    external_security_groups = optional(list(string), [])
+    keypair                  = optional(string)
+    jump_host                = optional(string)
+    metadata                 = optional(map(string), {})
+    create_port              = optional(bool, false)
+    port_security_enabled    = optional(bool, true)
     volumes = optional(list(object({
       name        = string
       size        = number

@@ -1,6 +1,8 @@
 locals {
-  user       = "ubuntu" # TODO: Get from image metadata
-  port_sufix = substr(data.openstack_networking_network_v2.network.id, 0, 4)
+  user              = "ubuntu" # TODO: Get from image metadata
+  port_sufix        = substr(data.openstack_networking_network_v2.network.id, 0, 4)
+  external_sg_ids   = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.id]
+  external_sg_names = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.name]
 }
 
 resource "openstack_networking_port_v2" "network_port" {
@@ -8,7 +10,7 @@ resource "openstack_networking_port_v2" "network_port" {
   name                  = "${local.configuration.name}-${local.port_sufix}"
   network_id            = data.openstack_networking_network_v2.network.id
   port_security_enabled = local.configuration.port_security_enabled
-  security_group_ids    = local.configuration.port_security_enabled ? concat([for sg in data.openstack_networking_secgroup_v2.upstream_sg : sg.id], local.instance_security_group_ids) : null
+  security_group_ids    = local.configuration.port_security_enabled ? distinct(concat(local.external_sg_ids, local.configuration.security_groups, local.instance_security_group_ids)) : null
 }
 
 resource "openstack_compute_instance_v2" "instance" {
@@ -17,7 +19,7 @@ resource "openstack_compute_instance_v2" "instance" {
   availability_zone   = local.az
   image_id            = local.image.id
   key_pair            = data.openstack_compute_keypair_v2.keypair.name
-  security_groups     = local.configuration.create_port ? null : concat(local.configuration.security_groups, local.instance_security_group)
+  security_groups     = local.configuration.create_port ? null : distinct(concat(local.external_sg_names, local.configuration.security_groups, local.instance_security_group))
   stop_before_destroy = true
   metadata            = local.configuration.metadata
 
