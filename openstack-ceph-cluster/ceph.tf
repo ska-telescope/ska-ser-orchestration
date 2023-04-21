@@ -1,5 +1,5 @@
 locals {
-  ceph_node_applications = ["ceph"]
+  #  ceph_node_applications = ["ceph"]
 }
 
 module "ceph_master" {
