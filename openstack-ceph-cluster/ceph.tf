@@ -30,7 +30,7 @@ module "ceph_master" {
         size        = var.ceph.master.wal_volume_size
         mount_point = ""
       },
-    ]  : []
+    ] : []
     #applications = local.ceph_node_applications
   }
 }
