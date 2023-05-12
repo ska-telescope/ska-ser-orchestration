@@ -1,8 +1,9 @@
 locals {
-  user              = "ubuntu" # TODO: Get from image metadata
-  port_sufix        = substr(data.openstack_networking_network_v2.network.id, 0, 4)
-  external_sg_ids   = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.id]
-  external_sg_names = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.name]
+  user                = "ubuntu" # TODO: Get from image metadata
+  port_sufix          = substr(data.openstack_networking_network_v2.network.id, 0, 4)
+  external_sg_ids     = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.id]
+  external_sg_names   = [for sg in data.openstack_networking_secgroup_v2.external_sgs : sg.name]
+  default_port_subnet = data.openstack_networking_network_v2.network.subnets[0]
 }
 
 resource "openstack_networking_port_v2" "network_port" {
@@ -11,6 +12,13 @@ resource "openstack_networking_port_v2" "network_port" {
   network_id            = data.openstack_networking_network_v2.network.id
   port_security_enabled = local.configuration.port_security_enabled
   security_group_ids    = local.configuration.port_security_enabled ? distinct(concat(local.external_sg_ids, local.configuration.security_groups, local.instance_security_group_ids)) : null
+  dynamic "fixed_ip" {
+    for_each = local.configuration.fixed_ip != null ? [1] : []
+    content {
+      subnet_id  = local.default_port_subnet
+      ip_address = local.configuration.fixed_ip
+    }
+  }
 }
 
 resource "openstack_compute_instance_v2" "instance" {
