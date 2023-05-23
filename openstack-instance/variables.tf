@@ -32,6 +32,7 @@ variable "configuration" {
     jump_host                = optional(string)
     metadata                 = optional(map(string), {})
     create_port              = optional(bool, false)
+    fixed_ip                 = optional(string)
     port_security_enabled    = optional(bool, true)
     volumes = optional(list(object({
       name        = string

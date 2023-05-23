@@ -19,7 +19,7 @@ locals {
       direction = "ingress"
       protocol  = "tcp"
       ports     = [10901]
-      target    = "network"
+      target    = "public"
     }
   }
 }
