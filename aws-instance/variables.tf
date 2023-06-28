@@ -1,19 +1,13 @@
-variable "python" {
-  type        = string
-  default     = "python3"
-  description = "Override by setting TF_VAR_python environment variable"
-}
-
 variable "defaults" {
   type = object({
-    availability_zone     = string
-    instance_type         = string
-    ami                   = string
-    keypair               = string
-    subnet_id             = string
-    jump_host             = optional(string)
-    elastic_ip_subnet_id  = optional(string)
-    vpn_cidr_blocks       = optional(list(string))
+    availability_zone    = string
+    instance_type        = string
+    ami                  = string
+    keypair              = string
+    subnet_id            = string
+    jump_host            = optional(string)
+    elastic_ip_subnet_id = optional(string)
+    vpn_cidr_blocks      = optional(list(string))
   })
   description = "Set of default values used when creating AWS instances"
 }
@@ -39,8 +33,8 @@ variable "configuration" {
       size        = number
       mount_point = string
     })), [])
-    applications       = optional(list(string), [])
-    create_elastic_ip  = optional(bool)
+    applications      = optional(list(string), [])
+    create_elastic_ip = optional(bool)
     elastic_ip = optional(object({
       create    = optional(bool)
       address   = optional(string)

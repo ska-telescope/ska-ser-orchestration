@@ -1,9 +1,9 @@
 locals {
-  user  = "ubuntu" # TODO: Get from image metadata
+  user = "ubuntu" # TODO: Get from image metadata
 }
 
 resource "aws_network_interface" "net" {
-  subnet_id   = local.configuration.subnet_id
+  subnet_id = local.configuration.subnet_id
 
   tags = {
     Name = "primary_network_interface"
