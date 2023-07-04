@@ -1,12 +1,12 @@
 module "boundary_controller" {
   source   = "../aws-instance"
-  defaults = var.defaults
+  defaults = var.defaults.controller
   providers = {
     aws = aws
   }
 
   configuration = {
-    name              = join("-", [var.boundary.name, var.boundary.controller.name])
+    name              = var.boundary.controller.name
     instance_type     = var.boundary.controller.instance_type
     ami               = var.boundary.controller.ami
     availability_zone = var.boundary.controller.availability_zone
