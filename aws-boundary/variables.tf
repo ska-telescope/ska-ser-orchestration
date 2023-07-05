@@ -13,6 +13,8 @@ variable "defaults" {
     })
     database = object({
       db_name                 = string
+      db_subnet_group_name    = optional(string)
+      db_subnets              = optional(list(string))
       allocated_storage       = string
       instance_class          = string
       engine                  = string
@@ -27,6 +29,7 @@ variable "defaults" {
 
 variable "boundary" {
   type = object({
+    name = optional(string, "boundary")
     controller = optional(object({
       name              = optional(string, "controller")
       instance_type     = optional(string)
@@ -39,6 +42,8 @@ variable "boundary" {
     }))
     database = optional(object({
       db_name                 = optional(string, "boundary")
+      db_subnet_group_name    = optional(string)
+      db_subnets              = optional(list(string), [])
       allocated_storage       = optional(string)
       instance_class          = optional(string)
       engine                  = optional(string)
@@ -47,8 +52,8 @@ variable "boundary" {
       password                = optional(string)
       parameter_group_name    = optional(string)
       skip_final_snapshot     = optional(bool,true)
-      subnet_id               = optional(string)
       security_groups         = optional(list(string), [])
+      
     }))
   })
 }
