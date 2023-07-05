@@ -11,17 +11,17 @@ variable "defaults" {
       vpn_cidr_blocks   = optional(list(string))
     })
     database = object({
-      db_name                 = string
-      db_subnet_group_name    = optional(string)
-      db_subnets              = optional(list(string))
-      allocated_storage       = string
-      instance_class          = string
-      engine                  = string
-      engine_version          = string
-      username                = string
-      password                = string
-      parameter_group_name    = optional(string)
-      skip_final_snapshot     = optional(bool,true)
+      db_name              = string
+      db_subnet_group_name = optional(string)
+      db_subnets           = optional(list(string))
+      allocated_storage    = string
+      instance_class       = string
+      engine               = string
+      engine_version       = string
+      username             = string
+      password             = string
+      parameter_group_name = optional(string)
+      skip_final_snapshot  = optional(bool, true)
     })
   })
 }
@@ -40,19 +40,19 @@ variable "boundary" {
       roles             = optional(list(string), ["controller"])
     }))
     database = optional(object({
-      db_name                 = optional(string, "boundary")
-      db_subnet_group_name    = optional(string)
-      db_subnets              = optional(list(string), [])
-      allocated_storage       = optional(string)
-      instance_class          = optional(string)
-      engine                  = optional(string)
-      engine_version          = optional(string)
-      username                = optional(string)
-      password                = optional(string)
-      parameter_group_name    = optional(string)
-      skip_final_snapshot     = optional(bool,true)
-      security_groups         = optional(list(string), [])
-      
+      db_name              = optional(string, "boundary")
+      db_subnet_group_name = optional(string)
+      db_subnets           = optional(list(string), [])
+      allocated_storage    = optional(string)
+      instance_class       = optional(string)
+      engine               = optional(string)
+      engine_version       = optional(string)
+      username             = optional(string)
+      password             = optional(string)
+      parameter_group_name = optional(string)
+      skip_final_snapshot  = optional(bool, true)
+      security_groups      = optional(list(string), [])
+
     }))
   })
 }
