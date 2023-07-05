@@ -5,7 +5,6 @@ variable "defaults" {
       availability_zone = string
       instance_type     = string
       ami               = string
-      vpc_id            = string
       keypair           = string
       subnet_id         = string
       jump_host         = optional(string)
