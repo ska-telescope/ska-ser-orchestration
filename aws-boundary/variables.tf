@@ -11,6 +11,7 @@ variable "defaults" {
       vpn_cidr_blocks   = optional(list(string))
     })
     database = object({
+      identifier           = string
       db_name              = string
       db_subnet_group_name = optional(string)
       db_subnets           = optional(list(string))
@@ -40,6 +41,7 @@ variable "boundary" {
       roles             = optional(list(string), ["controller"])
     }))
     database = optional(object({
+      identifier           = optional(string)
       db_name              = optional(string, "boundary")
       db_subnet_group_name = optional(string)
       db_subnets           = optional(list(string), [])

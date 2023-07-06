@@ -1,4 +1,5 @@
 locals {
+  identifier           = coalesce(var.boundary.database.identifier, var.defaults.database.identifier)
   allocated_storage    = coalesce(var.boundary.database.allocated_storage, var.defaults.database.allocated_storage)
   db_name              = coalesce(var.boundary.database.db_name, var.defaults.database.db_name)
   db_subnet_group_name = coalesce(var.boundary.database.db_subnet_group_name, var.defaults.database.db_subnet_group_name)
@@ -49,6 +50,7 @@ resource "aws_security_group" "allow_postgres" {
 }
 
 resource "aws_db_instance" "db_instance" {
+  identifier             = local.identifier
   allocated_storage      = local.allocated_storage
   db_name                = local.db_name
   db_subnet_group_name   = local.db_subnet_group_name
