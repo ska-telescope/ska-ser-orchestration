@@ -24,6 +24,12 @@ variable "defaults" {
       parameter_group_name = optional(string)
       skip_final_snapshot  = optional(bool, true)
     })
+    kms = object({
+      name                = string
+      master_key_spec     = string
+      is_enabled          = optional(bool,true)
+      enable_key_rotation = optional(bool,true)
+    })
   })
 }
 
@@ -55,6 +61,12 @@ variable "boundary" {
       skip_final_snapshot  = optional(bool, true)
       security_groups      = optional(list(string), [])
 
+    }))
+    kms = optional(object({ 
+      name                = optional(string)
+      master_key_spec     = optional(string)
+      is_enabled          = optional(bool,true)
+      enable_key_rotation = optional(bool,true)
     }))
   })
 }
