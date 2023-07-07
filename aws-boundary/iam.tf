@@ -24,12 +24,12 @@ data "aws_iam_policy_document" "controller_kms_policy" {
   statement {
     effect = "Allow"
 
-    actions =  ["kms:Encrypt",
-                "kms:Decrypt",
-                "kms:ReEncrypt*",
-                "kms:GenerateDataKey*",
-                "kms:DescribeKey"]
-  
+    actions = ["kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+    "kms:DescribeKey"]
+
     resources = ["${data.aws_kms_key.boundary_kms.arn}"]
   }
 }

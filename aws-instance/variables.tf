@@ -2,6 +2,7 @@ variable "defaults" {
   type = object({
     availability_zone    = string
     instance_type        = string
+    iam_instance_profile = optional(string)
     ami                  = string
     keypair              = string
     subnet_id            = string
@@ -16,6 +17,7 @@ variable "configuration" {
   type = object({
     name                     = string
     instance_type            = optional(string)
+    iam_instance_profile     = optional(string)
     ami                      = optional(string)
     availability_zone        = optional(string)
     subnet_id                = optional(string)

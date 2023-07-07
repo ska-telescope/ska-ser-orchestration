@@ -1,14 +1,15 @@
 variable "defaults" {
   type = object({
     controller = object({
-      name              = string
-      availability_zone = string
-      instance_type     = string
-      ami               = string
-      keypair           = string
-      subnet_id         = string
-      jump_host         = optional(string)
-      vpn_cidr_blocks   = optional(list(string))
+      name                 = string
+      availability_zone    = string
+      instance_type        = string
+      iam_instance_profile = optional(string)
+      ami                  = string
+      keypair              = string
+      subnet_id            = string
+      jump_host            = optional(string)
+      vpn_cidr_blocks      = optional(list(string))
     })
     database = object({
       identifier           = string
@@ -27,8 +28,8 @@ variable "defaults" {
     kms = object({
       name                = string
       master_key_spec     = string
-      is_enabled          = optional(bool,true)
-      enable_key_rotation = optional(bool,true)
+      is_enabled          = optional(bool, true)
+      enable_key_rotation = optional(bool, true)
     })
   })
 }
@@ -37,14 +38,15 @@ variable "boundary" {
   type = object({
     name = optional(string, "boundary")
     controller = optional(object({
-      name              = optional(string, "controller")
-      instance_type     = optional(string)
-      ami               = optional(string)
-      availability_zone = optional(string)
-      subnet_id         = optional(string)
-      keypair           = optional(string)
-      jump_host         = optional(string)
-      roles             = optional(list(string), ["controller"])
+      name                 = optional(string, "controller")
+      instance_type        = optional(string)
+      iam_instance_profile = optional(string)
+      ami                  = optional(string)
+      availability_zone    = optional(string)
+      subnet_id            = optional(string)
+      keypair              = optional(string)
+      jump_host            = optional(string)
+      roles                = optional(list(string), ["controller"])
     }))
     database = optional(object({
       identifier           = optional(string)
@@ -62,11 +64,11 @@ variable "boundary" {
       security_groups      = optional(list(string), [])
 
     }))
-    kms = optional(object({ 
+    kms = optional(object({
       name                = optional(string)
       master_key_spec     = optional(string)
-      is_enabled          = optional(bool,true)
-      enable_key_rotation = optional(bool,true)
+      is_enabled          = optional(bool, true)
+      enable_key_rotation = optional(bool, true)
     }))
   })
 }
