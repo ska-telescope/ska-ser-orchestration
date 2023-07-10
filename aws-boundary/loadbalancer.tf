@@ -1,7 +1,7 @@
 locals {
   loadbalancer = {
     name                       = coalesce(var.boundary.loadbalancer.name, var.defaults.loadbalancer.name)
-    certificate_arn            = try(coalesce(var.boundary.loadbalancer.certificate_arn, var.defaults.loadbalancer.certificate_arn),null)
+    certificate_arn            = try(coalesce(var.boundary.loadbalancer.certificate_arn, var.defaults.loadbalancer.certificate_arn), null)
     environment                = coalesce(var.boundary.loadbalancer.environment, var.defaults.loadbalancer.environment)
     internal                   = coalesce(var.boundary.loadbalancer.internal, var.defaults.loadbalancer.internal)
     load_balancer_type         = coalesce(var.boundary.loadbalancer.load_balancer_type, var.defaults.loadbalancer.load_balancer_type)
@@ -12,11 +12,11 @@ locals {
 }
 
 resource "aws_lb" "loadbalancer" {
-  name               = local.loadbalancer.name
-  internal           = local.loadbalancer.internal
-  load_balancer_type = local.loadbalancer.load_balancer_type
-  security_groups    = local.loadbalancer.security_groups
-  subnets            = local.loadbalancer.subnets
+  name                       = local.loadbalancer.name
+  internal                   = local.loadbalancer.internal
+  load_balancer_type         = local.loadbalancer.load_balancer_type
+  security_groups            = local.loadbalancer.security_groups
+  subnets                    = local.loadbalancer.subnets
   enable_deletion_protection = local.loadbalancer.enable_deletion_protection
 
   access_logs {
