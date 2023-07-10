@@ -1,7 +1,7 @@
 locals {
-    securitygroup = {
-        controller_subnet_id = coalesce(var.boundary.controller.subnet_id, var.defaults.controller.subnet_id)
-    }
+  securitygroup = {
+    controller_subnet_id = coalesce(var.boundary.controller.subnet_id, var.defaults.controller.subnet_id)
+  }
 }
 data "aws_subnet" "controller" {
   id = local.securitygroup.controller_subnet_id

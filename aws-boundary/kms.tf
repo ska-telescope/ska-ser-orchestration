@@ -1,10 +1,10 @@
 locals {
-    kms = {
-        name                = coalesce(var.boundary.kms.name, var.defaults.kms.name)
-        master_key_spec     = coalesce(var.boundary.kms.master_key_spec, var.defaults.kms.master_key_spec)
-        is_enabled          = coalesce(var.boundary.kms.is_enabled, var.defaults.kms.is_enabled)
-        enable_key_rotation = coalesce(var.boundary.kms.enable_key_rotation, var.defaults.kms.enable_key_rotation)
-    }
+  kms = {
+    name                = coalesce(var.boundary.kms.name, var.defaults.kms.name)
+    master_key_spec     = coalesce(var.boundary.kms.master_key_spec, var.defaults.kms.master_key_spec)
+    is_enabled          = coalesce(var.boundary.kms.is_enabled, var.defaults.kms.is_enabled)
+    enable_key_rotation = coalesce(var.boundary.kms.enable_key_rotation, var.defaults.kms.enable_key_rotation)
+  }
 }
 
 

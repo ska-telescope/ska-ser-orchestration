@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "controller_kms_policy" {
       "kms:Decrypt",
       "kms:ReEncrypt*",
       "kms:GenerateDataKey*",
-      "kms:DescribeKey"]
+    "kms:DescribeKey"]
 
     resources = ["${data.aws_kms_key.boundary_kms.arn}"]
   }
@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
     actions = [
       "s3:PutObject"
     ]
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["${aws_s3_bucket.lb_logs.arn}/*"]
     principals {
       identifiers = ["delivery.logs.amazonaws.com"]
@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
     actions = [
       "s3:GetBucketAcl"
     ]
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["${aws_s3_bucket.lb_logs.arn}"]
     principals {
       identifiers = ["delivery.logs.amazonaws.com"]

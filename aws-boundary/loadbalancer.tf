@@ -1,13 +1,13 @@
 locals {
-    loadbalancer = {
-        name                       = coalesce(var.boundary.loadbalancer.name, var.defaults.loadbalancer.name)
-        environment                   = coalesce(var.boundary.loadbalancer.environment, var.defaults.loadbalancer.environment)
-        internal                      = coalesce(var.boundary.loadbalancer.internal, var.defaults.loadbalancer.internal)
-        load_balancer_type            = coalesce(var.boundary.loadbalancer.load_balancer_type, var.defaults.loadbalancer.load_balancer_type)
-        security_groups               = coalescelist(var.boundary.loadbalancer.security_groups, var.defaults.loadbalancer.security_groups)
-        subnets                       = coalescelist(var.boundary.loadbalancer.subnets, var.defaults.loadbalancer.subnets)
-        enable_deletion_protection    = coalesce(var.boundary.loadbalancer.enable_deletion_protection, var.defaults.loadbalancer.enable_deletion_protection)
-    }
+  loadbalancer = {
+    name                       = coalesce(var.boundary.loadbalancer.name, var.defaults.loadbalancer.name)
+    environment                = coalesce(var.boundary.loadbalancer.environment, var.defaults.loadbalancer.environment)
+    internal                   = coalesce(var.boundary.loadbalancer.internal, var.defaults.loadbalancer.internal)
+    load_balancer_type         = coalesce(var.boundary.loadbalancer.load_balancer_type, var.defaults.loadbalancer.load_balancer_type)
+    security_groups            = coalescelist(var.boundary.loadbalancer.security_groups, var.defaults.loadbalancer.security_groups)
+    subnets                    = coalescelist(var.boundary.loadbalancer.subnets, var.defaults.loadbalancer.subnets)
+    enable_deletion_protection = coalesce(var.boundary.loadbalancer.enable_deletion_protection, var.defaults.loadbalancer.enable_deletion_protection)
+  }
 }
 
 resource "aws_lb" "lb" {

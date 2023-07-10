@@ -32,13 +32,13 @@ variable "defaults" {
       enable_key_rotation = optional(bool, true)
     })
     loadbalancer = object({
-      name                        = string
-      environment                 = optional(string)
-      internal                    = bool
-      load_balancer_type          = string
-      security_groups             = optional(list(string))
-      subnets                     = list(string)
-      enable_deletion_protection  = optional(bool, true)
+      name                       = string
+      environment                = optional(string)
+      internal                   = bool
+      load_balancer_type         = string
+      security_groups            = optional(list(string))
+      subnets                    = list(string)
+      enable_deletion_protection = optional(bool, true)
     })
   })
 }
@@ -80,13 +80,13 @@ variable "boundary" {
       enable_key_rotation = optional(bool, true)
     }))
     loadbalancer = optional(object({
-      name                        = optional(string)
-      environment                 = optional(string)
-      internal                    = optional(bool, true)
-      load_balancer_type          = optional(string)
-      security_groups             = optional(list(string))
-      subnets                     = optional(list(string))
-      enable_deletion_protection  = optional(bool, true)
+      name                       = optional(string)
+      environment                = optional(string)
+      internal                   = optional(bool, true)
+      load_balancer_type         = optional(string)
+      security_groups            = optional(list(string))
+      subnets                    = optional(list(string))
+      enable_deletion_protection = optional(bool, true)
     }))
   })
 }
