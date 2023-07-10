@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "controller_kms_policy" {
       "kms:GenerateDataKey*",
     "kms:DescribeKey"]
 
-    resources = ["${data.aws_kms_key.boundary_kms.arn}"]
+    resources = [data.aws_kms_key.boundary_kms.arn]
   }
 }
 
@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
     ]
 
     principals {
-      identifiers = ["${data.aws_elb_service_account.main.arn}"]
+      identifiers = [data.aws_elb_service_account.main.arn]
       type        = "AWS"
     }
   }
@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "s3_bucket_lb_write" {
       "s3:GetBucketAcl"
     ]
     effect    = "Allow"
-    resources = ["${aws_s3_bucket.lb_logs.arn}"]
+    resources = [aws_s3_bucket.lb_logs.arn]
     principals {
       identifiers = ["delivery.logs.amazonaws.com"]
       type        = "Service"
