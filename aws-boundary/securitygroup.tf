@@ -35,7 +35,7 @@ resource "aws_security_group" "allow_postgres" {
 
 resource "aws_security_group" "allow_external_https" {
   name        = "allow_external_https"
-  description = "Allow Postgres inbound traffic"
+  description = "Allow HTTPS external inbound traffic"
   vpc_id      = data.aws_subnet.controller.vpc_id
 
   ingress {
@@ -55,6 +55,6 @@ resource "aws_security_group" "allow_external_https" {
   }
 
   tags = {
-    Name = "allow_https"
+    Name = "allow_external_https"
   }
 }

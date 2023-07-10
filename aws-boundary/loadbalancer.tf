@@ -5,17 +5,18 @@ locals {
     environment                = coalesce(var.boundary.loadbalancer.environment, var.defaults.loadbalancer.environment)
     internal                   = coalesce(var.boundary.loadbalancer.internal, var.defaults.loadbalancer.internal)
     load_balancer_type         = coalesce(var.boundary.loadbalancer.load_balancer_type, var.defaults.loadbalancer.load_balancer_type)
-    security_groups            = coalescelist(var.boundary.loadbalancer.security_groups, var.defaults.loadbalancer.security_groups)
+    additional_security_groups = try(coalescelist(var.boundary.loadbalancer.additional_security_groups, var.defaults.loadbalancer.additional_security_groups), null)
     subnets                    = coalescelist(var.boundary.loadbalancer.subnets, var.defaults.loadbalancer.subnets)
     enable_deletion_protection = coalesce(var.boundary.loadbalancer.enable_deletion_protection, var.defaults.loadbalancer.enable_deletion_protection)
   }
 }
 
 resource "aws_lb" "loadbalancer" {
-  name                       = local.loadbalancer.name
-  internal                   = local.loadbalancer.internal
-  load_balancer_type         = local.loadbalancer.load_balancer_type
-  security_groups            = local.loadbalancer.security_groups
+  name               = local.loadbalancer.name
+  internal           = local.loadbalancer.internal
+  load_balancer_type = local.loadbalancer.load_balancer_type
+  security_groups = try(coalescelist([aws_security_group.allow_external_https.id],
+  local.loadbalancer.additional_security_groups), null)
   subnets                    = local.loadbalancer.subnets
   enable_deletion_protection = local.loadbalancer.enable_deletion_protection
 
