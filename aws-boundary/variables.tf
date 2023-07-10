@@ -33,6 +33,7 @@ variable "defaults" {
     })
     loadbalancer = object({
       name                       = string
+      certificate_arn            = optional(string)
       environment                = optional(string)
       internal                   = bool
       load_balancer_type         = string
@@ -81,6 +82,7 @@ variable "boundary" {
     }))
     loadbalancer = optional(object({
       name                       = optional(string)
+      certificate_arn            = optional(string)
       environment                = optional(string)
       internal                   = optional(bool, true)
       load_balancer_type         = optional(string)

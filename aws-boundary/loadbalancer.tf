@@ -1,6 +1,7 @@
 locals {
   loadbalancer = {
     name                       = coalesce(var.boundary.loadbalancer.name, var.defaults.loadbalancer.name)
+    certificate_arn            = try(coalesce(var.boundary.loadbalancer.certificate_arn, var.defaults.loadbalancer.certificate_arn),null)
     environment                = coalesce(var.boundary.loadbalancer.environment, var.defaults.loadbalancer.environment)
     internal                   = coalesce(var.boundary.loadbalancer.internal, var.defaults.loadbalancer.internal)
     load_balancer_type         = coalesce(var.boundary.loadbalancer.load_balancer_type, var.defaults.loadbalancer.load_balancer_type)
@@ -10,7 +11,7 @@ locals {
   }
 }
 
-resource "aws_lb" "lb" {
+resource "aws_lb" "loadbalancer" {
   name               = local.loadbalancer.name
   internal           = local.loadbalancer.internal
   load_balancer_type = local.loadbalancer.load_balancer_type
@@ -37,5 +38,25 @@ resource "aws_s3_bucket" "lb_logs" {
     Name        = local.loadbalancer.name
     Environment = local.loadbalancer.environment
   }
+}
+
+#resource "aws_lb_listener" "listener" {
+#  load_balancer_arn = aws_lb.loadbalancer.arn
+#  port              = "443"
+#  protocol          = "HTTPS"
+#  ssl_policy        = "ELBSecurityPolicy-2016-08"
+#  certificate_arn   = local.loadbalancer.certificate_arn
+
+#  default_action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.controller.arn
+#  }
+#}
+
+resource "aws_lb_target_group" "controller" {
+  name     = "controller"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = data.aws_subnet.controller.vpc_id
 }
 
