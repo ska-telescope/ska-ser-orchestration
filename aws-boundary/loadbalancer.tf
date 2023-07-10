@@ -17,7 +17,6 @@ resource "aws_lb" "loadbalancer" {
   load_balancer_type = local.loadbalancer.load_balancer_type
   security_groups    = local.loadbalancer.security_groups
   subnets            = local.loadbalancer.subnets
-
   enable_deletion_protection = local.loadbalancer.enable_deletion_protection
 
   access_logs {
