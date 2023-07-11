@@ -22,7 +22,7 @@ resource "aws_lb" "loadbalancer" {
 
   access_logs {
     bucket  = aws_s3_bucket.lb_logs.id
-    prefix  = "test-lb"
+    prefix  = local.loadbalancer.name
     enabled = true
   }
 
