@@ -55,8 +55,8 @@ resource "aws_s3_bucket" "lb_logs" {
 
 resource "aws_lb_target_group" "controller" {
   name     = "controller"
-  port     = 443
-  protocol = "HTTPS"
+  port     = 9200
+  protocol = "TCP"
   vpc_id   = data.aws_subnet.controller.vpc_id
 }
 
