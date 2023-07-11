@@ -11,6 +11,17 @@ variable "defaults" {
       jump_host            = optional(string)
       vpn_cidr_blocks      = optional(list(string))
     })
+    worker = object({
+      name                 = string
+      availability_zone    = string
+      instance_type        = string
+      iam_instance_profile = optional(string)
+      ami                  = string
+      keypair              = string
+      subnet_id            = string
+      jump_host            = optional(string)
+      vpn_cidr_blocks      = optional(list(string))
+    })
     database = object({
       identifier           = string
       db_name              = string
@@ -48,6 +59,17 @@ variable "boundary" {
   type = object({
     name = optional(string, "boundary")
     controller = optional(object({
+      name                 = optional(string, "controller")
+      instance_type        = optional(string)
+      iam_instance_profile = optional(string)
+      ami                  = optional(string)
+      availability_zone    = optional(string)
+      subnet_id            = optional(string)
+      keypair              = optional(string)
+      jump_host            = optional(string)
+      roles                = optional(list(string), ["controller"])
+    }))
+    worker = optional(object({
       name                 = optional(string, "controller")
       instance_type        = optional(string)
       iam_instance_profile = optional(string)

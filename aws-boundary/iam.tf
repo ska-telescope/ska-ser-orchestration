@@ -54,6 +54,18 @@ resource "aws_iam_role_policy_attachment" "controller_kms_access" {
   policy_arn = aws_iam_policy.controller_kms_access.arn
 }
 
+# Worker EC2 Profile
+resource "aws_iam_instance_profile" "worker" {
+  name = "worker_profile"
+  role = aws_iam_role.worker_role.name
+}
+
+resource "aws_iam_role" "worker_role" {
+  name               = "worker_role"
+  path               = "/"
+  assume_role_policy = data.aws_iam_policy_document.assume_policy.json
+}
+
 data "aws_elb_service_account" "main" {}
 
 # Loadbalancer Log Bucket IAM polic
