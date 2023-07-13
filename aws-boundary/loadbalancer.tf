@@ -40,23 +40,30 @@ resource "aws_s3_bucket" "lb_logs" {
   }
 }
 
-#resource "aws_lb_listener" "listener" {
-#  load_balancer_arn = aws_lb.loadbalancer.arn
-#  port              = "443"
-#  protocol          = "HTTPS"
-#  ssl_policy        = "ELBSecurityPolicy-2016-08"
-#  certificate_arn   = local.loadbalancer.certificate_arn
+data "aws_acm_certificate" "boundary_skao_int" {
+  domain      = "boundary.skao.int"
+  statuses    = [ "ISSUED" ]
+  types       = [ "AMAZON_ISSUED" ]
+  most_recent = true
+}
 
-#  default_action {
-#    type             = "forward"
-#    target_group_arn = aws_lb_target_group.controller.arn
-#  }
-#}
+resource "aws_lb_listener" "listener" {
+  load_balancer_arn = aws_lb.loadbalancer.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = data.aws_acm_certificate.boundary_skao_int.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.controller.arn
+  }
+}
 
 resource "aws_lb_target_group" "controller" {
   name     = "controller"
   port     = 9200
-  protocol = "TCP"
-  vpc_id   = data.aws_subnet.controller.vpc_id
+  protocol = "HTTPS"
+  vpc_id   = data.aws_subnet.controllers.vpc_id
 }
 

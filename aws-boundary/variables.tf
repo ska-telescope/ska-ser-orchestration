@@ -106,11 +106,11 @@ variable "boundary" {
       name                       = optional(string)
       certificate_arn            = optional(string)
       environment                = optional(string)
-      internal                   = optional(bool, true)
+      internal                   = optional(bool)
       load_balancer_type         = optional(string)
       additional_security_groups = optional(list(string))
       subnets                    = optional(list(string))
-      enable_deletion_protection = optional(bool, true)
+      enable_deletion_protection = optional(bool)
     }))
   })
 }
