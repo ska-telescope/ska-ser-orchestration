@@ -37,10 +37,24 @@ variable "defaults" {
       skip_final_snapshot  = optional(bool, true)
     })
     kms = object({
-      name                = string
-      master_key_spec     = string
-      is_enabled          = optional(bool, true)
-      enable_key_rotation = optional(bool, true)
+      root = object({
+        name                = string
+        master_key_spec     = string
+        is_enabled          = optional(bool, true)
+        enable_key_rotation = optional(bool, true)
+      })
+      worker = object({
+        name                = string
+        master_key_spec     = string
+        is_enabled          = optional(bool, true)
+        enable_key_rotation = optional(bool, true)
+      })
+      recovery = object({
+        name                = string
+        master_key_spec     = string
+        is_enabled          = optional(bool, true)
+        enable_key_rotation = optional(bool, true)
+      })
     })
     loadbalancer = object({
       name                       = string
@@ -97,10 +111,24 @@ variable "boundary" {
 
     }))
     kms = optional(object({
-      name                = optional(string)
-      master_key_spec     = optional(string)
-      is_enabled          = optional(bool, true)
-      enable_key_rotation = optional(bool, true)
+      root = optional(object({
+        name                = optional(string)
+        master_key_spec     = optional(string)
+        is_enabled          = optional(bool)
+        enable_key_rotation = optional(bool)
+      }))
+      worker = optional(object({
+        name                = optional(string)
+        master_key_spec     = optional(string)
+        is_enabled          = optional(bool)
+        enable_key_rotation = optional(bool)
+      }))
+      recovery = optional(object({
+        name                = optional(string)
+        master_key_spec     = optional(string)
+        is_enabled          = optional(bool)
+        enable_key_rotation = optional(bool)
+      }))
     }))
     loadbalancer = optional(object({
       name                       = optional(string)
